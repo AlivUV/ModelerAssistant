@@ -1,0 +1,54 @@
+{
+    "name": "UserHistory",
+    "uri": "http://uh",
+    "prefix": "uh",
+    "xml": {
+        "tagAlias": "UserHistory"
+    },
+    "types": [{
+        "name": "props",
+        "extends": [
+            "bpmn:Task",
+            "bpmn:CallActivity"
+        ],
+        "superClass": ["Element"],
+        "properties": [{
+                "name": "priority",
+                "isAttr": true,
+                "type": "String"
+            },
+            {
+                "name": "points",
+                "isAttr": true,
+                "type": "Integer"
+            },
+            {
+                "name": "smart",
+                "isAttr": true,
+                "type": "Boolean"
+            },
+            {
+                "name": "developer",
+                "isAttr": true,
+                "type": "String"
+            },
+            {
+                "name": "purpose",
+                "isAttr": true,
+                "type": "String"
+            },
+            {
+                "name": "restrictions",
+                "isAttr": true,
+                "type": "String"
+            },
+            {
+                "name": "acceptanceCriteria",
+                "isAttr": true,
+                "type": "String"
+            }
+        ]
+    }],
+    "emumerations": [],
+    "associations": []
+}

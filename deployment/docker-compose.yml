@@ -1,0 +1,72 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_NAME}
+      POSTGRES_PASSWORD: ${DATABASE_USER}
+      POSTGRES_DB: ${DATABASE_PASSWORD}
+    volumes:
+      - ~/bd_data/bd_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER}" ]
+      interval: 5s
+
+  migration:
+    image: backend
+    build:
+      context: ../
+      dockerfile: ./deployment/backend/Dockerfile
+      args:
+        - DATABASE_NAME=${DATABASE_NAME}
+        - DATABASE_USER=${DATABASE_USER}
+        - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+        - DATABASE_HOST=${DATABASE_HOST}
+        - DATABASE_PORT=${DATABASE_PORT}
+    command: python manage.py migrate --noinput
+    volumes:
+      - django_cache:/opt/app/backend/cache
+      - django_static:/opt/app/static
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  backend:
+    image: backend
+    restart: always
+    volumes:
+      - django_cache:/opt/app/backend/cache
+      - django_static:/opt/app/static
+    depends_on:
+      - migration
+    env_file:
+      - .env
+
+  frontend:
+    restart: always
+    image: frontend
+    build:
+      context: ../
+      dockerfile: ./deployment/frontend/Dockerfile
+
+  nginx:
+    image: nginxebpm
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+    ports:
+      - "80:80"
+
+volumes:
+  django_cache:
+  django_static:
+  bd_data:
