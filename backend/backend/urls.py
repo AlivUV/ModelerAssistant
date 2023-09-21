@@ -16,13 +16,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(('users.urls', 'users'), namespace='users')),
+    path('assistant/', include(('assistant.urls', 'assistant'), namespace='assistant')),
     path('projects/', include(('projects.urls', 'projects'), namespace='projects')),
     path('diagrams/', include(('diagrams.urls', 'diagrams'), namespace='diagrams')),
     path('association_rules/', include(('association_rules.urls', 'association_rules'), namespace='association_rules')),

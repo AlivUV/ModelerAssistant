@@ -4,6 +4,7 @@ import {calculateDiagramMicroservices, getDiagram as getInfoDiagram, updateDiagr
 import { addRules } from '../../service/AprioriService';
 import { Toast, Modal } from 'bootstrap';
 import * as ProjectService from "../../service/ProjectService";
+import * as AssistantService from "../../service/AssistantService"
 
 // BPMN
 import BpmnModeler from 'bpmn-js/lib/Modeler';
@@ -548,6 +549,13 @@ function ModelerComponent() {
     getData();
   }, [])
 
+  const redraw = async (modeler) => {
+    const response = await AssistantService.autocomplete();
+
+    setDiagram({ name: "Prueba", description: "", xml: response.data.xml })
+    run(modeler, response.data.xml)
+  }
+
   return (
     <div className='bg-two'>
       <NavBar />
@@ -568,11 +576,20 @@ function ModelerComponent() {
               <i className="bi bi-file-earmark-text"></i> View Product Backlog
             </button>
             {/* Button View MS */}
-              <button className="btn-four py-2 me-3" onClick={() => onClickViewMicroservices(instanceModeler)} disabled={blockingViewMicroservices}>
-                <i className="bi bi-file-earmark-text"></i> View MS
-              </button>
+            <button className="btn-four py-2 me-3" onClick={() => onClickViewMicroservices(instanceModeler)} disabled={blockingViewMicroservices}>
+              <i className="bi bi-file-earmark-text"></i> View MS
+            </button>
+            {/* Button Assistant */}
+            <button className="btn-four py-2 me-3" onClick={() => redraw(instanceModeler)} disabled={blockingViewMicroservices}>
+              <i className="bi bi-file-earmark-text"></i> Assistant
+            </button>
             {/* Button Save */}
-            <button id="save_diagram" className="btn-one py-2" onClick={() => save(instanceModeler)} disabled={!loadSave}>
+            <button id="save_diagram" className="btn-one py-2"
+              onClick={() => {
+                console.log(instanceModeler._moddle);
+                return; save(instanceModeler)
+              }}
+              disabled={!loadSave}>
               {
                 loadSave ?
                   <i className="bi bi-save me-1"></i>

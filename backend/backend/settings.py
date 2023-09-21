@@ -97,8 +97,8 @@ ROOT_URLCONF = 'backend.urls'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': get_env('DATABASE_NAME'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR + '/db.sqlite3',
         'USER': get_env('DATABASE_USER'),
         'PASSWORD': get_env('DATABASE_PASSWORD'),
         'HOST': get_env('DATABASE_HOST'),
