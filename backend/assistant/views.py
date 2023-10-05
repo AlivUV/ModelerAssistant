@@ -1,4 +1,5 @@
 import os
+import json
 import openai
 import environ
 from rest_framework import status
@@ -23,10 +24,11 @@ def get_env(key, default=None):
         return os.environ.get(key, default)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def autocomplete(request):
+    body = json.loads(request.body.decode('utf-8'))
     data = {'data':{
-        'mensaje': 'Hi',
+        'message': body['prompt'],
         'xml': '''<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:uh="http://uh" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0xcv3nk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.0.0-dev">
   <bpmn:collaboration id="Collaboration_139m2ev">
