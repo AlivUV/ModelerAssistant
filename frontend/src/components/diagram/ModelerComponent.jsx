@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {calculateDiagramMicroservices, getDiagram as getInfoDiagram, updateDiagram} from '../../service/DiagramService';
+import { calculateDiagramMicroservices, getDiagram as getInfoDiagram, updateDiagram } from '../../service/DiagramService';
 import { addRules } from '../../service/AprioriService';
 import { Toast, Modal } from 'bootstrap';
 import * as ProjectService from "../../service/ProjectService";
@@ -19,8 +19,9 @@ import ModalDiagram from './ModalDiagram';
 import Alert from '../Alert';
 import ModalPropertiesPanel from './ModalPropertiesPanel';
 import ModalUserStories from './ModalUserStories';
+import ModalAssistant from './ModalAssistant';
 import ModalPdf from '../pdfbacklog/ModalPdf';
-import {MICROSERVICE_VIEWER_URL} from "../../utils";
+import { MICROSERVICE_VIEWER_URL } from "../../utils";
 import config from "bootstrap/js/src/util/config";
 
 
@@ -34,6 +35,8 @@ function ModelerComponent() {
   const [refModalPropertiesElement] = useState(React.createRef());
   const [modalPropertiesPanel, setModalPropertiesPanel] = useState('');
   const [refModalUserStories] = useState(React.createRef());
+  const [refModalAssistant] = useState(React.createRef());
+  const [modalAssistant, setModalAssistant] = useState('');
   const [modalPdf, setModalPdf] = useState('');
   const [refModalPdf] = useState(React.createRef());
   const [modalUserStories, setModalUserStories] = useState('');
@@ -380,6 +383,12 @@ function ModelerComponent() {
     setModalUserStories(modal);
   }
 
+  const openModalAssistant = () => {
+    const modal = new Modal(refModalAssistant.current, options);
+    modal.show();
+    setModalAssistant(modal);
+  }
+
   const onClickViewMicroservices = async (modeler) => {
     const elementRegistry = modeler.get('elementRegistry');
     const overlays = modeler.get('overlays');
@@ -392,7 +401,7 @@ function ModelerComponent() {
     setBlockingViewMicroservices(true);
     setAlertMessage('Generating Microservices');
     setAlertType('Success');
-    const toast = new Toast(refAlertElement.current, {autohide:false});
+    const toast = new Toast(refAlertElement.current, { autohide: false });
     toast.show();
 
 
@@ -423,7 +432,7 @@ function ModelerComponent() {
         const formData = {
           json_user_histories: jsonCreate(modeler),
         }
-        const interoperabilityData ={
+        const interoperabilityData = {
           "userStories": formData.json_user_histories.userStories
         }
         await calculateDiagramMicroservices(interoperabilityData).then(
@@ -580,7 +589,7 @@ function ModelerComponent() {
               <i className="bi bi-file-earmark-text"></i> View MS
             </button>
             {/* Button Assistant */}
-            <button className="btn-four py-2 me-3" onClick={() => redraw(instanceModeler)} disabled={blockingViewMicroservices}>
+            <button className="btn-four py-2 me-3" onClick={() => openModalAssistant()} >
               <i className="bi bi-file-earmark-text"></i> Assistant
             </button>
             {/* Button Save */}
@@ -617,6 +626,7 @@ function ModelerComponent() {
       <ModalPdf jsonCreate={jsonCreate} modeler={instanceModeler} modalPdf={modalPdf} refModalPdf={refModalPdf}></ModalPdf>
       <ModalUserStories jsonCreate={jsonCreate} modeler={instanceModeler} modalUserStories={modalUserStories} refModalUserStories={refModalUserStories} openModalPdf={openModalPdf} loadCreateUserStories={loadCreateUserStories}></ModalUserStories>
       <Alert type={alertType} message={alertMessage} refAlertElement={refAlertElement} />
+      <ModalAssistant refModalAssistant={refModalAssistant} ></ModalAssistant>
     </div>
   )
 }
