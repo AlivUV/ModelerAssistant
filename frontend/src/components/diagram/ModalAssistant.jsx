@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import * as AssistantService from "../../service/AssistantService"
+import { Modal } from 'bootstrap';
 
+// BPMN
+import { options } from '@bpmn-io/properties-panel/preact';
+
+// Components
+import ModalPreview from './ModalPreview';
 
 function ModalAssistant(props) {
 
   const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
+  const [preview, setPreview] = useState({ ...props.diagram, xml: "" });
+  const [refModalPreview] = useState(React.createRef());
 
   const addActivity = () => {
     setActivities([...activities, ["", ""]]);
@@ -29,11 +37,19 @@ function ModalAssistant(props) {
     setDescription(e.target.value);
   };
 
+  const openModalPreview = () => {
+    const modal = new Modal(refModalPreview.current, options);
+    modal.show();
+  }
+
   const handleSubmit = async (evt) => {
     evt.preventDefault();
-    console.log(activities);
-    console.log(description);
+
     const response = await AssistantService.autocomplete(description, activities);
+
+    setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
+
+    openModalPreview();
   };
 
   return (
@@ -97,6 +113,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
+      <ModalPreview refModalPreview={refModalPreview} diagram={preview}></ModalPreview>
     </div>
   )
 }

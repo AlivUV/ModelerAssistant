@@ -27,9 +27,7 @@ def get_env(key, default=None):
 @api_view(['POST'])
 def autocomplete(request):
     body = json.loads(request.body.decode('utf-8'))
-    data = {'data':{
-        'message': body['prompt'],
-        'xml': '''<?xml version="1.0" encoding="UTF-8"?>
+    xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:uh="http://uh" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0xcv3nk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.0.0-dev">
   <bpmn:collaboration id="Collaboration_139m2ev">
     <bpmn:participant id="Participant_1he7wbr" name="User" processRef="Process_1" />
@@ -112,19 +110,33 @@ def autocomplete(request):
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>'''
-    }}
-    return Response(data, status = status.HTTP_200_OK)
 
     openai.api_key = get_env("OPENAI_API_KEY")
 
+    print('=================================')
+    print('=================================')
+    print('=================================')
+    print('=================================')
+
+    print('openai.api_key')
+
     completion = openai.ChatCompletion.create(
-        model="text-davinci-003",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Hello, GPT-4!"}
-        ],
-        max_tokens=100
+            {"role": "user", "content": body['prompt']}
+        ]
     )
 
-    data = {'data': {'xml': completion.choices[0].message.content}}
+    print('=================================')
+    print('=================================')
+    print('=================================')
+    print('=================================')
+
+    data = {
+      'data': {
+        'message': body['prompt'],
+        'xml': completion.choices[0].message.content
+      }
+    }
     return Response(data, status = status.HTTP_200_OK)

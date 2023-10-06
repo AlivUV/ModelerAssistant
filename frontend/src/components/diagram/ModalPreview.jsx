@@ -5,6 +5,7 @@ import BpmnModeler from 'bpmn-js/lib/Modeler';
 
 function ModalPreview(props) {
   const HIGH_PRIORITY = 1500;
+  const [modeler, setModeler] = useState();
   const [diagram, setDiagram] = useState({
     name: '',
     description: '',
@@ -25,25 +26,27 @@ function ModalPreview(props) {
   }, [])
 
   useEffect(() => {
-    console.log(diagram.xml);
-    console.log(diagram.xml === "");
-    if (diagram.xml === "") {
-      setDiagram(props.diagram);
-      return
-    }
+    if (modeler)
+      return;
 
-    const modeler = new BpmnModeler({
+    setModeler(new BpmnModeler({
       container: '#preview',
       textRenderer: {
         defaultStyle: {
           fontFamily: '"Montserrat"'
         }
       }
-    });
+    }));
+  }, [modeler])
+
+  useEffect(() => {
+    if (diagram.xml === "") {
+      setDiagram(props.diagram);
+      return
+    }
 
     run(modeler, props.diagram.xml);
-  }, [diagram, props.diagram, run])
-
+  }, [diagram, props.diagram, run, modeler])
 
   return (
     <div
@@ -69,10 +72,6 @@ function ModalPreview(props) {
 
           <div className="modal-footer border-0">
             <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
-            {/* Button Create Diagram */}
-            <button className="btn-one shadow-lg py-1">
-              Generate
-            </button>
           </div>
         </div>
       </div>
