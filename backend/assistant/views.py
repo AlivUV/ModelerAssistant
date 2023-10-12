@@ -122,10 +122,7 @@ def autocomplete(request):
 
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": body['prompt']}
-        ]
+        messages=body['messages']
     )
 
     print('=================================')
@@ -135,7 +132,7 @@ def autocomplete(request):
 
     data = {
       'data': {
-        'message': body['prompt'],
+        'message': body['messages'][-1]['content'],
         'xml': completion.choices[0].message.content
       }
     }

@@ -12,7 +12,8 @@ function ModalAssistant(props) {
 
   const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
-  const [preview, setPreview] = useState({ ...props.diagram, xml: "" });
+  const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
+  const [preview, setPreview] = useState({ ...props.diagram, xml: '' });
   const [refModalPreview] = useState(React.createRef());
 
   const addActivity = () => {
@@ -37,15 +38,38 @@ function ModalAssistant(props) {
     setDescription(e.target.value);
   };
 
-  const openModalPreview = () => {
+  const openModalPreview = async () => {
+    const response = await AssistantService.regenerate(description, record);
+
+    console.log(response.data);
+
+    setRecord([
+      ...record,
+      { role: 'user', content: response.data.message },
+      { role: 'assistant', content: response.data.xml.split('```')[1].slice(4) }
+    ]);
+
+    setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
+
+    preview.xml.split().forEach(line => {
+      console.log(line);
+    });
+
     const modal = new Modal(refModalPreview.current, options);
     modal.show();
   }
 
   const handleSubmit = async (evt) => {
     evt.preventDefault();
-
     const response = await AssistantService.autocomplete(description, activities);
+
+    console.log(response.data);
+
+    setRecord([
+      ...record,
+      { role: 'user', content: response.data.message },
+      { role: 'assistant', content: response.data.xml.split('```')[1].slice(4) }
+    ]);
 
     setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
 
@@ -107,6 +131,7 @@ function ModalAssistant(props) {
               </div>
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
+                <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
                 <button type="submit" className="btn-one shadow-lg py-1" >Create</button>
               </div>
             </div>
