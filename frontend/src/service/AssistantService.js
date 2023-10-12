@@ -38,7 +38,7 @@ export const regenerate = async (description, record) => {
         body: JSON.stringify({
             messages: [
                 ...record,
-                { role: 'user', content: description }
+                { role: 'user', content: 'Al código xml que generaste ' + description }
             ]
         })
     })

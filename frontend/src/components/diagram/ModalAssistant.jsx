@@ -39,31 +39,19 @@ function ModalAssistant(props) {
   };
 
   const openModalPreview = async () => {
-    const response = await AssistantService.regenerate(description, record);
-
-    console.log(response.data);
-
-    setRecord([
-      ...record,
-      { role: 'user', content: response.data.message },
-      { role: 'assistant', content: response.data.xml.split('```')[1].slice(4) }
-    ]);
-
-    setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
-
-    preview.xml.split().forEach(line => {
-      console.log(line);
-    });
-
+    console.log(preview.xml);
     const modal = new Modal(refModalPreview.current, options);
     modal.show();
   }
 
-  const handleSubmit = async (evt) => {
-    evt.preventDefault();
-    const response = await AssistantService.autocomplete(description, activities);
-
-    console.log(response.data);
+  const assistant = async (description, activities = null) => {
+    let response;
+    if (activities === null) {
+      response = await AssistantService.regenerate(description, record);
+      console.log(response);
+    } else {
+      response = await AssistantService.autocomplete(description, activities);
+    }
 
     setRecord([
       ...record,
@@ -72,6 +60,20 @@ function ModalAssistant(props) {
     ]);
 
     setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
+  }
+
+  const handleSubmit = async (evt) => {
+    evt.preventDefault();
+
+    const start = Date.now();
+
+    if (record.length > 1) {
+      await assistant(description)
+    } else {
+      await assistant(description, activities)
+    }
+
+    console.log(`El asistente se tomó: ${Date.now() - start}`);
 
     openModalPreview();
   };
@@ -132,7 +134,11 @@ function ModalAssistant(props) {
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
-                <button type="submit" className="btn-one shadow-lg py-1" >Create</button>
+                {
+                  (record.length > 1)
+                    ? <button type="submit" className="btn-one shadow-lg py-1" >Modify</button>
+                    : <button type="submit" className="btn-one shadow-lg py-1" >Create</button>
+                }
               </div>
             </div>
           </form>
