@@ -10,15 +10,17 @@ import ModalPreview from './ModalPreview';
 
 function ModalAssistant(props) {
 
-  const [activities, setActivities] = useState([]);
+  const [activities, setActivities] = useState([["", ""]]);
   const [description, setDescription] = useState('');
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [preview, setPreview] = useState({ ...props.diagram, xml: '' });
   const [refModalPreview] = useState(React.createRef());
 
-  const addActivity = () => {
+  const addActivity = (e) => {
+    e.preventDefault();
     setActivities([...activities, ["", ""]]);
-  }
+
+  };
 
   const deleteActivity = (position) => {
     setActivities([...activities.filter((_, index) => index !== position)]);
@@ -98,22 +100,23 @@ function ModalAssistant(props) {
               <label className="form-label">More Details: </label>
               <div className="modal-footer border-0">
                 <button type="button" id='add' className="btn-one shadow-lg py-1"
-                  onClick={() => addActivity()}
+                  onClick={addActivity}
                 > <i className="bi bi-plus-circle"></i> Add</button>
               </div>
               <div>
                 {
                   activities.map((activity, index) => (
-                    <div key={index + 1}>
+                    <div key={index}>
                       <div className='row' >
                         <div className='col-10' >
                           <div className="mb-2 mt-2">
+                            <hr className="hr hr-blurry" />  {/*Divider*/}
                             <label className="form-label">Activity: {index + 1}</label>
-                            <input className="form-control" onChange={(e) => handleChangeActivities(e, index)} name='activity' />
+                            <input className="form-control" value={activity[0]} onChange={(e) => handleChangeActivities(e, index)} name='activity' />
                           </div>
                         </div>
                         <div className="col" >
-                          <button type="button" className="btn btn-secondary shadow-lg py-1 mt-2"
+                          <button type="button" className="btn btn-secondary shadow-lg py-1 mt-4"
                             onClick={() => { deleteActivity(index) }}
                           > <i className="bi bi-trash"></i>
                           </button>
@@ -123,7 +126,7 @@ function ModalAssistant(props) {
                         <div className='col-10'>
                           <div className="mb-3">
                             <label className="form-label">Responsible: </label>
-                            <input className="form-control" onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
+                            <input className="form-control" value={activity[1]} onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
                           </div>
                         </div>
                       </div>
