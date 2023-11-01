@@ -95,42 +95,46 @@ function ModalAssistant(props) {
                 <textarea className="form-control" required rows="5" onChange={handleChangeDescription} name='description' ></textarea>
               </div>
               <hr className="hr hr-blurry" />  {/*Divider*/}
-              <label className="form-label">More Details: </label>
-              <div className="modal-footer border-0">
-                <button type="button" id='add' className="btn-one shadow-lg py-1"
-                  onClick={() => addActivity()}
-                > <i className="bi bi-plus-circle"></i> Add</button>
-              </div>
-              <div>
-                {
-                  activities.map((activity, index) => (
-                    <div key={index + 1}>
-                      <div className='row' >
-                        <div className='col-10' >
-                          <div className="mb-2 mt-2">
-                            <label className="form-label">Activity: {index + 1}</label>
-                            <input className="form-control" onChange={(e) => handleChangeActivities(e, index)} name='activity' />
-                          </div>
-                        </div>
-                        <div className="col" >
-                          <button type="button" className="btn btn-secondary shadow-lg py-1 mt-2"
-                            onClick={() => { deleteActivity(index) }}
-                          > <i className="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div className='row'>
-                        <div className='col-10'>
-                          <div className="mb-3">
-                            <label className="form-label">Responsible: </label>
-                            <input className="form-control" onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
-                          </div>
-                        </div>
-                      </div>
+              {
+                (record.length > 1)
+                  ? <></>
+                  : <div>
+                    <label className="form-label">More Details: </label>
+                    <div className="modal-footer border-0">
+                      <button type="button" id='add' className="btn-one shadow-lg py-1"
+                        onClick={() => addActivity()}
+                      > <i className="bi bi-plus-circle"></i> Add</button>
                     </div>
-                  ))
-                }
-              </div>
+                    {
+                      activities.map((activity, index) => (
+                        <div key={index + 1}>
+                          <div className='row' >
+                            <div className='col-10' >
+                              <div className="mb-2 mt-2">
+                                <label className="form-label">Activity: {index + 1}</label>
+                                <input className="form-control" onChange={(e) => handleChangeActivities(e, index)} name='activity' />
+                              </div>
+                            </div>
+                            <div className="col" >
+                              <button type="button" className="btn btn-secondary shadow-lg py-1 mt-2"
+                                onClick={() => { deleteActivity(index) }}
+                              > <i className="bi bi-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div className='row'>
+                            <div className='col-10'>
+                              <div className="mb-3">
+                                <label className="form-label">Responsible: </label>
+                                <input className="form-control" onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+              }
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
