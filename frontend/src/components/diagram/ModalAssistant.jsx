@@ -47,7 +47,18 @@ function ModalAssistant(props) {
   const assistant = async (description, activities = null) => {
     let response;
     if (activities === null) {
-      response = await AssistantService.regenerate(description, record);
+      setRecord([
+        ...record,
+        { role: 'assistant', content: preview.xml }
+      ]);
+
+      response = await AssistantService.regenerate(
+        description,
+        [
+          ...record,
+          { role: 'assistant', content: preview.xml }
+        ]
+      );
       console.log(response);
     } else {
       response = await AssistantService.autocomplete(description, activities);
@@ -55,8 +66,7 @@ function ModalAssistant(props) {
 
     setRecord([
       ...record,
-      { role: 'user', content: response.data.message },
-      { role: 'assistant', content: response.data.xml.split('```')[1].slice(4) }
+      { role: 'user', content: response.data.message }
     ]);
 
     setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
@@ -148,7 +158,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} diagram={preview}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} diagram={preview} setDiagram={setPreview}></ModalPreview>
     </div>
   )
 }
