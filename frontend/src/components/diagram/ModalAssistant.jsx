@@ -18,10 +18,10 @@ function ModalAssistant(props) {
   const [preview, setPreview] = useState({ ...props.diagram, xml: '' });
   const [refModalPreview] = useState(React.createRef());
 
-  const addActivity = (e) => {
-    e.preventDefault();
+  const addActivity = () => {
     setActivities([...activities, ["", ""]]);
   };
+
 
   const deleteActivity = (position) => {
     setActivities([...activities.filter((_, index) => index !== position)]);
@@ -84,7 +84,18 @@ function ModalAssistant(props) {
   const assistant = async (description, activities = null) => {
     let response;
     if (activities === null) {
-      response = await AssistantService.regenerate(description, record);
+      setRecord([
+        ...record,
+        { role: 'assistant', content: preview.xml }
+      ]);
+
+      response = await AssistantService.regenerate(
+        description,
+        [
+          ...record,
+          { role: 'assistant', content: preview.xml }
+        ]
+      );
       console.log(response);
     } else {
       response = await AssistantService.autocomplete(description, activities);
@@ -92,8 +103,7 @@ function ModalAssistant(props) {
 
     setRecord([
       ...record,
-      { role: 'user', content: response.data.message },
-      { role: 'assistant', content: response.data.xml.split('```')[1].slice(4) }
+      { role: 'user', content: response.data.message }
     ]);
 
     setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
@@ -147,43 +157,46 @@ function ModalAssistant(props) {
                 <textarea className="form-control" required value={description} rows="5" onChange={handleChangeDescription} name='description' ></textarea>
               </div>
               <hr className="hr hr-blurry" />  {/*Divider*/}
-              <label className="form-label">More Details: </label>
-              <div className="modal-footer border-0">
-                <button type="button" id='add' className="btn-one shadow-lg py-1"
-                  onClick={addActivity}
-                > <i className="bi bi-plus-circle"></i> Add</button>
-              </div>
-              <div>
-                {
-                  activities.map((activity, index) => (
-                    <div key={index}>
-                      <div className='row' >
-                        <div className='col-10' >
-                          <div className="mb-2 mt-2">
-                            <hr className="hr hr-blurry" />  {/*Divider*/}
-                            <label className="form-label">Activity: {index + 1}</label>
-                            <input className="form-control" value={activity[0]} onChange={(e) => handleChangeActivities(e, index)} name='activity' />
-                          </div>
-                        </div>
-                        <div className="col" >
-                          <button type="button" className="btn btn-secondary shadow-lg py-1 mt-4"
-                            onClick={() => { deleteActivity(index) }}
-                          > <i className="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div className='row'>
-                        <div className='col-10'>
-                          <div className="mb-3">
-                            <label className="form-label">Responsible: </label>
-                            <input className="form-control" value={activity[1]} onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
-                          </div>
-                        </div>
-                      </div>
+              {
+                (record.length > 1)
+                  ? <></>
+                  : <div>
+                    <label className="form-label">More Details: </label>
+                    <div className="modal-footer border-0">
+                      <button type="button" id='add' className="btn-one shadow-lg py-1"
+                        onClick={() => addActivity()}
+                      > <i className="bi bi-plus-circle"></i> Add</button>
                     </div>
-                  ))
-                }
-              </div>
+                    {
+                      activities.map((activity, index) => (
+                        <div key={index + 1}>
+                          <div className='row' >
+                            <div className='col-10' >
+                              <div className="mb-2 mt-2">
+                                <label className="form-label">Activity: {index + 1}</label>
+                                <input className="form-control" onChange={(e) => handleChangeActivities(e, index)} name='activity' />
+                              </div>
+                            </div>
+                            <div className="col" >
+                              <button type="button" className="btn btn-secondary shadow-lg py-1 mt-2"
+                                onClick={() => { deleteActivity(index) }}
+                              > <i className="bi bi-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div className='row'>
+                            <div className='col-10'>
+                              <div className="mb-3">
+                                <label className="form-label">Responsible: </label>
+                                <input className="form-control" onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+              }
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
@@ -206,7 +219,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} diagram={preview}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} diagram={preview} setDiagram={setPreview}></ModalPreview>
     </div>
   )
 }

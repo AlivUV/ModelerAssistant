@@ -25,6 +25,12 @@ function ModalPreview(props) {
     }
   }, [])
 
+  const handleClose = useCallback(async () => {
+    const data = await modeler.saveXML({ format: true });
+
+    props.setDiagram({ ...props.diagram, xml: data.xml });
+  }, [modeler, props])
+
   useEffect(() => {
     if (modeler)
       return;
@@ -71,7 +77,7 @@ function ModalPreview(props) {
           }} />
 
           <div className="modal-footer border-0">
-            <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
+            <button type="button" onClick={handleClose} className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
