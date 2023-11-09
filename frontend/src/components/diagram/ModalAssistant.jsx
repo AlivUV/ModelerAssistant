@@ -10,8 +10,10 @@ import ModalPreview from './ModalPreview';
 
 function ModalAssistant(props) {
 
-  const [activities, setActivities] = useState([["", ""]]);
+  const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  //const [isRecording, setIsRecording] = useState(false);
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [preview, setPreview] = useState({ ...props.diagram, xml: '' });
   const [refModalPreview] = useState(React.createRef());
@@ -19,7 +21,6 @@ function ModalAssistant(props) {
   const addActivity = (e) => {
     e.preventDefault();
     setActivities([...activities, ["", ""]]);
-
   };
 
   const deleteActivity = (position) => {
@@ -46,6 +47,40 @@ function ModalAssistant(props) {
     modal.show();
   }
 
+  const startRecording = () => {
+    const recognition = new window.webkitSpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'es';
+
+    recognition.onresult = (event) => {
+      let tempTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          tempTranscript += event.results[i][0].transcript + ' ';
+        } else {
+          tempTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      setDescription(tempTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Error al reconocer voz:', event.error);
+    };
+
+    recognition.onend = () => {
+      console.log('Fin de la grabación de voz');
+      //setIsRecording(false);
+    };
+
+    recognition.start();
+    //setIsRecording(true);
+  };
+
   const assistant = async (description, activities = null) => {
     let response;
     if (activities === null) {
@@ -67,6 +102,7 @@ function ModalAssistant(props) {
   const handleSubmit = async (evt) => {
     evt.preventDefault();
 
+    setIsLoading(true);
     const start = Date.now();
 
     if (record.length > 1) {
@@ -76,6 +112,8 @@ function ModalAssistant(props) {
     }
 
     console.log(`El asistente se tomó: ${Date.now() - start}`);
+
+    setIsLoading(false);
 
     openModalPreview();
   };
@@ -93,8 +131,20 @@ function ModalAssistant(props) {
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               <div>
-                <label className="form-label">Description:</label>
-                <textarea className="form-control" required rows="5" onChange={handleChangeDescription} name='description' ></textarea>
+                <div class="row">
+                  <div className='col-10' >
+                    <div className="mb-2 mt-2">
+                      <label className="form-label">Description:</label>
+                    </div>
+                  </div>
+                  <div className="col" >
+                    <button type="button" title="Start recording" className="btn btn-secondary shadow-lg py-1 mt-1"
+                      onClick={startRecording}>
+                      <i className="bi bi-mic"></i>
+                    </button>
+                  </div>
+                </div>
+                <textarea className="form-control" required value={description} rows="5" onChange={handleChangeDescription} name='description' ></textarea>
               </div>
               <hr className="hr hr-blurry" />  {/*Divider*/}
               <label className="form-label">More Details: </label>
@@ -139,10 +189,19 @@ function ModalAssistant(props) {
                 <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
                 {
                   (record.length > 1)
-                    ? <button type="submit" className="btn-one shadow-lg py-1" >Modify</button>
-                    : <button type="submit" className="btn-one shadow-lg py-1" >Create</button>
+                    ? <button type="submit" className="btn-one shadow-lg py-1"
+                      disabled={isLoading}> Modify</button>
+                    : <button type="submit" className="btn-one shadow-lg py-1"
+                      disabled={isLoading}>Create</button>
                 }
               </div>
+              {isLoading ?
+                <div className="clearfix m-4">
+                  <div className="spinner-border spinner-border-md float-end" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                : <></>}
             </div>
           </form>
         </div>
