@@ -13,7 +13,8 @@ function ModalAssistant(props) {
   const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  //const [isRecording, setIsRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognition, setRecognition] = useState(null);
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [preview, setPreview] = useState({ ...props.diagram, xml: '' });
   const [refModalPreview] = useState(React.createRef());
@@ -48,7 +49,14 @@ function ModalAssistant(props) {
   }
 
   const startRecording = () => {
-    const recognition = new window.webkitSpeechRecognition();
+    if (recognition === null) {
+      setRecognition(new window.webkitSpeechRecognition());
+    }
+
+    if (isRecording) {
+      recognition.stop();
+      return;
+    }
 
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -74,11 +82,11 @@ function ModalAssistant(props) {
 
     recognition.onend = () => {
       console.log('Fin de la grabación de voz');
-      //setIsRecording(false);
+      setIsRecording(false);
     };
 
     recognition.start();
-    //setIsRecording(true);
+    setIsRecording(true);
   };
 
   const assistant = async (description, activities = null) => {
