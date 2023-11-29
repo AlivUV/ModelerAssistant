@@ -20,7 +20,7 @@ const makePrompt = (description, activities) => {
 }
 
 export const autocomplete = async (description, activities, record = [{ role: 'system', content: 'You are a helpful assistant.' }]) => {
-    return await fetch(`${API_URL}/assistant/autocomplete/`, {
+    return await fetch(`${API_URL}/assistant/gpt/`, {
         method: "POST",
         body: JSON.stringify({
             messages: [
