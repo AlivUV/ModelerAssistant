@@ -23,7 +23,6 @@ function ModalAssistant(props) {
     setActivities([...activities, ["", ""]]);
   };
 
-
   const deleteActivity = (position) => {
     setActivities([...activities.filter((_, index) => index !== position)]);
   };
@@ -177,7 +176,7 @@ function ModalAssistant(props) {
                           <div className='row' >
                             <div className='col-10' >
                               <div className="mb-2 mt-2">
-                                <label className="form-label">Activity: {index + 1}</label>
+                                <label className="form-label">Activity {index + 1}:</label>
                                 <input className="form-control" onChange={(e) => handleChangeActivities(e, index)} name='activity' />
                               </div>
                             </div>
@@ -193,6 +192,7 @@ function ModalAssistant(props) {
                               <div className="mb-3">
                                 <label className="form-label">Responsible: </label>
                                 <input className="form-control" onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
+                                <hr className="hr hr-blurry" />  {/*Divider*/}
                               </div>
                             </div>
                           </div>
