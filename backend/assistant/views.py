@@ -2,8 +2,9 @@ import os
 import json
 import openai
 import environ
+import requests
+from bardapi import Bard
 from rest_framework import status
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.core.exceptions import ImproperlyConfigured
@@ -25,9 +26,9 @@ def get_env(key, default=None):
 
 
 @api_view(['POST'])
-def autocomplete(request):
+def gpt(request):
     body = json.loads(request.body.decode('utf-8'))
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
+    gptXml = '''<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:uh="http://uh" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0xcv3nk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.0.0-dev">
   <bpmn:collaboration id="Collaboration_139m2ev">
     <bpmn:participant id="Participant_1he7wbr" name="User" processRef="Process_1" />
@@ -118,7 +119,7 @@ def autocomplete(request):
     print('=================================')
     print('=================================')
 
-    print('openai.api_key')
+    print('gpt in progress')
 
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -131,9 +132,62 @@ def autocomplete(request):
     print('=================================')
 
     data = {
-      'data': {
-        'message': body['messages'][-1]['content'],
-        'xml': completion.choices[0].message.content
-      }
+        'data': {
+            'message': body['messages'][-1]['content'],
+            'xml': completion.choices[0].message.content
+        }
     }
+    return Response(data, status = status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def bard(request):
+
+    print('=================================')
+    print('=================================')
+    print('=================================')
+    print('=================================')
+
+    print('bard in progress')
+
+    body = json.loads(request.body.decode('utf-8'))
+
+    token = get_env("BARD_API_KEY")
+
+    input_text = """
+        Proporciona el código XML sobre el diagrama BPMN de un proceso de inicio de sesión para una aplicación web.
+        Por favor, proporciona la representación del proceso en formato BPMN XML 2.0 después de cerrar la etiqueta </definitions> incluye el xml correspondiente al diagrama '<bpmndi:BPMNDiagram>'.
+    """
+
+    session = requests.Session()
+    session.headers = {
+        "Host": "bard.google.com",
+        "X-Same-Domain": "1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Origin": "https://bard.google.com",
+        "Referer": "https://bard.google.com/",
+    }
+    session.cookies.set("__Secure-1PSID", token) 
+
+    bard = Bard(token = token, session=session, timeout=30)
+
+    bardXml = ""
+
+    for i, val in enumerate(bard.get_answer(input_text)['content'].split('```')):
+        if (i % 2 == 1):
+            bardXml += val[3:]
+
+    print('=================================')
+    print('=================================')
+    print('=================================')
+    print('=================================')
+
+    data = {
+        'data': {
+            'message': body['messages'][-1]['content'],
+            'xml': bardXml
+        }
+    }
+
     return Response(data, status = status.HTTP_200_OK)
