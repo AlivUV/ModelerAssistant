@@ -428,7 +428,6 @@ const findElement = (elementName, participants) => {
     const index = participants.findIndex(participant => {
         return participant.elements.find(e => e.name === elementName)
     });
-
     return [index, participants[index].elements.find(e => e.name === elementName)];
 }
 
