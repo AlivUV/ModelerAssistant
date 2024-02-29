@@ -4,7 +4,6 @@ import { calculateDiagramMicroservices, getDiagram as getInfoDiagram, updateDiag
 import { addRules } from '../../service/AprioriService';
 import { Toast, Modal } from 'bootstrap';
 import * as ProjectService from "../../service/ProjectService";
-import * as AssistantService from "../../service/AssistantService"
 
 // BPMN
 import BpmnModeler from 'bpmn-js/lib/Modeler';
@@ -22,7 +21,6 @@ import ModalUserStories from './ModalUserStories';
 import ModalAssistant from './ModalAssistant';
 import ModalPdf from '../pdfbacklog/ModalPdf';
 import { MICROSERVICE_VIEWER_URL } from "../../utils";
-import config from "bootstrap/js/src/util/config";
 
 
 function ModelerComponent() {
@@ -36,7 +34,7 @@ function ModelerComponent() {
   const [modalPropertiesPanel, setModalPropertiesPanel] = useState('');
   const [refModalUserStories] = useState(React.createRef());
   const [refModalAssistant] = useState(React.createRef());
-  const [modalAssistant, setModalAssistant] = useState('');
+  const [, setModalAssistant] = useState('');
   const [modalPdf, setModalPdf] = useState('');
   const [refModalPdf] = useState(React.createRef());
   const [modalUserStories, setModalUserStories] = useState('');
@@ -258,7 +256,7 @@ function ModelerComponent() {
     arrElements.forEach(element => {
       newRules = createAssociationRule(element, element, newRules)
     })
-    const res = await addRules(newRules)
+    await addRules(newRules)
   }
 
   const createAssociationRule = (element, elementSource, rules) => {
@@ -427,8 +425,8 @@ function ModelerComponent() {
     if (isValid) {
       try {
         // Update Diagram
-        const data = await modeler.saveXML({ format: true });
-        const resultSvg = await modeler.saveSVG({ format: true });
+        //const data = await modeler.saveXML({ format: true });
+        //const resultSvg = await modeler.saveSVG({ format: true });
         const formData = {
           json_user_histories: jsonCreate(modeler),
         }
@@ -558,15 +556,6 @@ function ModelerComponent() {
     getData();
   }, [])
 
-/*
-  const redraw = async (modeler) => {
-    const response = await AssistantService.gpt();
-
-    setDiagram({ name: "Prueba", description: "", xml: response.data.xml })
-    run(modeler, response.data.xml)
-  }
-*/
-
   return (
     <div className='bg-two'>
       <NavBar />
@@ -598,7 +587,7 @@ function ModelerComponent() {
             <button id="save_diagram" className="btn-one py-2"
               onClick={async () => {
                 console.log(await instanceModeler.saveXML({ format: true }));
-                return; save(instanceModeler)
+                return; //save(instanceModeler)
               }}
               disabled={!loadSave}>
               {
