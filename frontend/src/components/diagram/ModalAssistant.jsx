@@ -10,13 +10,17 @@ import ModalPreview from './ModalPreview';
 
 function ModalAssistant(props) {
 
+  const [modalOpened, setModalOpened] = useState(true);
   const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
-  const [preview, setPreview] = useState({ ...props.diagram, xml: '' });
+  const [previewDiagrams, setPreviewDiagrams] = useState({
+    gpt: { ...props.diagram, xml: '' },
+    bard: { ...props.diagram, xml: '' }
+  });
   const [refModalPreview] = useState(React.createRef());
 
   const addActivity = () => {
@@ -42,9 +46,12 @@ function ModalAssistant(props) {
   };
 
   const openModalPreview = async () => {
-    console.log(preview.xml);
+    console.log(previewDiagrams.gpt.xml);
+
     const modal = new Modal(refModalPreview.current, options);
     modal.show();
+
+    setModalOpened(true);
   }
 
   const startRecording = () => {
@@ -85,31 +92,63 @@ function ModalAssistant(props) {
   };
 
   const assistant = async (description, activities = null) => {
-    let response;
     if (activities === null) {
       setRecord([
         ...record,
-        { role: 'assistant', content: preview.xml }
+        { role: 'assistant', content: previewDiagrams.gpt.xml }
       ]);
 
-      response = await AssistantService.regenerate(
+      await AssistantService.regenerate(
         description,
         [
           ...record,
-          { role: 'assistant', content: preview.xml }
+          { role: 'assistant', content: previewDiagrams.gpt.xml }
         ]
-      );
-      console.log(response);
+      )
+        .then(response => {
+          setRecord([
+            ...record,
+            { role: 'user', content: response.data.message }
+          ]);
+
+          setPreviewDiagrams({
+            ...previewDiagrams,
+            gpt: {
+              ...previewDiagrams.gpt,
+              xml: response.data.xml
+            }
+          });
+        });
+
     } else {
-      response = await AssistantService.autocomplete(description, activities);
+      await AssistantService.gpt(description, activities)
+        .then(response => {
+          setRecord([
+            ...record,
+            { role: 'user', content: response.message }
+          ]);
+
+          setPreviewDiagrams({
+            ...previewDiagrams,
+            gpt: {
+              ...previewDiagrams.gpt,
+              xml: response.xml
+            }
+          });
+        });
+      /*
+      AssistantService.bard(description, activities)
+        .then(response => {
+          setPreviewDiagrams({
+            ...previewDiagrams,
+            bard: {
+              ...previewDiagrams.bard,
+              xml: response.data.xml
+            }
+          });
+        });
+        */
     }
-
-    setRecord([
-      ...record,
-      { role: 'user', content: response.data.message }
-    ]);
-
-    setPreview({ ...preview, xml: response.data.xml.split('```')[1].slice(4) });
   }
 
   const handleSubmit = async (evt) => {
@@ -223,7 +262,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} diagram={preview} setDiagram={setPreview}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams}></ModalPreview>
     </div>
   )
 }

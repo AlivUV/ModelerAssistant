@@ -558,12 +558,14 @@ function ModelerComponent() {
     getData();
   }, [])
 
+/*
   const redraw = async (modeler) => {
-    const response = await AssistantService.autocomplete();
+    const response = await AssistantService.gpt();
 
     setDiagram({ name: "Prueba", description: "", xml: response.data.xml })
     run(modeler, response.data.xml)
   }
+*/
 
   return (
     <div className='bg-two'>
@@ -594,8 +596,8 @@ function ModelerComponent() {
             </button>
             {/* Button Save */}
             <button id="save_diagram" className="btn-one py-2"
-              onClick={() => {
-                console.log(instanceModeler._moddle);
+              onClick={async () => {
+                console.log(await instanceModeler.saveXML({ format: true }));
                 return; save(instanceModeler)
               }}
               disabled={!loadSave}>
