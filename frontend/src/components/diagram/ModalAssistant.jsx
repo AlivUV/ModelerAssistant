@@ -123,10 +123,12 @@ function ModalAssistant(props) {
     } else {
       await AssistantService.gpt(description, activities)
         .then(response => {
+          /*
           setRecord([
             ...record,
             { role: 'user', content: response.message }
           ]);
+          */
 
           setPreviewDiagrams({
             ...previewDiagrams,
