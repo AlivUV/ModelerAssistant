@@ -46,8 +46,6 @@ function ModalAssistant(props) {
   };
 
   const openModalPreview = async () => {
-    console.log(previewDiagrams.gpt.xml);
-
     const modal = new Modal(refModalPreview.current, options);
     modal.show();
 
