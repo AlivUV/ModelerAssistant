@@ -48,7 +48,7 @@ function ModalPreview(props) {
                 className={`nav-link ${activeTab === 'tab2' ? 'active' : ''}`}
                 onClick={() => handleTabChange('tab2')}
               >
-                Llama2
+                Gemini
               </button>
             </li>
             {/* Add more tabs as needed */}
@@ -67,7 +67,7 @@ function ModalPreview(props) {
             >
               {/* Content for Tab 2 */}
               {/* Add content for Tab 2 */}
-              <PanelPreview id={'bard'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
+              <PanelPreview id={'gemini'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
             </div>
             {/* Add more tab content as needed */}
           </div>

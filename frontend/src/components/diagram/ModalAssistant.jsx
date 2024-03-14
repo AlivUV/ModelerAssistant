@@ -19,7 +19,7 @@ function ModalAssistant(props) {
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [previewDiagrams, setPreviewDiagrams] = useState({
     gpt: { ...props.diagram, xml: '' },
-    bard: { ...props.diagram, xml: '' }
+    gemini: { ...props.diagram, xml: '' }
   });
   const [refModalPreview] = useState(React.createRef());
 
@@ -121,7 +121,8 @@ function ModalAssistant(props) {
         });
 
     } else {
-      await AssistantService.gpt(description, activities)
+      const start = Date.now();
+      AssistantService.gpt(description, activities)
         .then(response => {
           setRecord([
             ...record,
@@ -135,19 +136,21 @@ function ModalAssistant(props) {
               xml: response.xml
             }
           });
+          console.log(`El asistente GPT se tomó: ${Date.now() - start}`);
         });
-      /*
-      AssistantService.bard(description, activities)
+
+      AssistantService.gemini(description, activities)
         .then(response => {
           setPreviewDiagrams({
             ...previewDiagrams,
-            bard: {
-              ...previewDiagrams.bard,
-              xml: response.data.xml
+            gemini: {
+              ...previewDiagrams.gemini,
+              xml: response.xml
             }
           });
+          console.log(`El asistente Gemini se tomó: ${Date.now() - start}`);
         });
-        */
+
     }
   }
 
@@ -155,7 +158,6 @@ function ModalAssistant(props) {
     evt.preventDefault();
 
     setIsLoading(true);
-    const start = Date.now();
 
     if (record.length > 1) {
       await assistant(description)
@@ -163,7 +165,7 @@ function ModalAssistant(props) {
       await assistant(description, activities)
     }
 
-    console.log(`El asistente se tomó: ${Date.now() - start}`);
+
 
     setIsLoading(false);
 
