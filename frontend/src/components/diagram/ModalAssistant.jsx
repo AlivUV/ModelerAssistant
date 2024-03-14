@@ -124,10 +124,12 @@ function ModalAssistant(props) {
       const start = Date.now();
       AssistantService.gpt(description, activities)
         .then(response => {
+          /*
           setRecord([
             ...record,
             { role: 'user', content: response.message }
           ]);
+          */
 
           setPreviewDiagrams({
             ...previewDiagrams,
