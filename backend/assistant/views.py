@@ -6,7 +6,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.core.exceptions import ImproperlyConfigured
-
+import asyncio
+from gemini_webapi import GeminiClient
 
 env = environ.Env()
 
@@ -54,6 +55,29 @@ def gpt(request):
         'data': {
             'message': body['messages'][-1]['content'],
             'xml': completion.choices[0].message.content
+        }
+    }
+    return Response(data, status = status.HTTP_200_OK)
+
+
+
+async def geminiAux(prompt):
+    client = GeminiClient(get_env("Secure_1PSID"), get_env("Secure_1PSIDTS"), proxy=None)
+    await client.init(timeout=30, auto_close=False, close_delay=300)
+    response = await client.generate_content(prompt)
+    print(response.text)
+    return response.text
+
+
+@api_view(['POST'])
+def gemini(request):
+    body = json.loads(request.body.decode('utf-8'))
+    response = asyncio.run(geminiAux(body["prompt"]))
+    print(response)
+    data = {
+        'data': {
+            'message': body['prompt'],
+            'xml': response.split('```')[1][5:]
         }
     }
     return Response(data, status = status.HTTP_200_OK)
