@@ -65,7 +65,6 @@ async def geminiAux(prompt):
     client = GeminiClient(get_env("Secure_1PSID"), get_env("Secure_1PSIDTS"), proxy=None)
     await client.init(timeout=30, auto_close=False, close_delay=300)
     response = await client.generate_content(prompt)
-    print(response.text)
     return response.text
 
 
@@ -73,7 +72,6 @@ async def geminiAux(prompt):
 def gemini(request):
     body = json.loads(request.body.decode('utf-8'))
     response = asyncio.run(geminiAux(body["prompt"]))
-    print(response)
     data = {
         'data': {
             'message': body['prompt'],

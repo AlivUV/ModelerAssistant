@@ -13,7 +13,8 @@ function ModalAssistant(props) {
   const [modalOpened, setModalOpened] = useState(true);
   const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingGpt, setIsLoadingGpt] = useState(false);
+  const [isLoadingGemini, setIsLoadingGemini] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
@@ -122,6 +123,9 @@ function ModalAssistant(props) {
 
     } else {
       const start = Date.now();
+      setIsLoadingGpt(true);
+      setIsLoadingGemini(true);
+
       AssistantService.gpt(description, activities)
         .then(response => {
           /*
@@ -139,6 +143,7 @@ function ModalAssistant(props) {
             }
           });
           console.log(`El asistente GPT se tomó: ${Date.now() - start}`);
+          setIsLoadingGpt(false);
         });
 
       AssistantService.gemini(description, activities)
@@ -151,6 +156,7 @@ function ModalAssistant(props) {
             }
           });
           console.log(`El asistente Gemini se tomó: ${Date.now() - start}`);
+          setIsLoadingGemini(false);
         });
 
     }
@@ -159,7 +165,7 @@ function ModalAssistant(props) {
   const handleSubmit = async (evt) => {
     evt.preventDefault();
 
-    setIsLoading(true);
+    //setIsLoading(true);
 
     if (record.length > 1) {
       await assistant(description)
@@ -167,9 +173,7 @@ function ModalAssistant(props) {
       await assistant(description, activities)
     }
 
-
-
-    setIsLoading(false);
+    //setIsLoading(false);
 
     openModalPreview();
   };
@@ -250,12 +254,12 @@ function ModalAssistant(props) {
                 {
                   (record.length > 1)
                     ? <button type="submit" className="btn-one shadow-lg py-1"
-                      disabled={isLoading}> Modify</button>
+                      disabled={isLoadingGpt}> Modify</button>
                     : <button type="submit" className="btn-one shadow-lg py-1"
-                      disabled={isLoading}>Create</button>
+                      disabled={isLoadingGpt}>Create</button>
                 }
               </div>
-              {isLoading ?
+              {isLoadingGpt ?
                 <div className="clearfix m-4">
                   <div className="spinner-border spinner-border-md float-end" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -266,7 +270,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loadingGpt={isLoadingGpt} loadingGemini={isLoadingGemini}></ModalPreview>
     </div>
   )
 }

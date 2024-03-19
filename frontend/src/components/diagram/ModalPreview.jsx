@@ -40,7 +40,12 @@ function ModalPreview(props) {
                 className={`nav-link ${activeTab === 'tab1' ? 'active' : ''}`}
                 onClick={() => handleTabChange('tab1')}
               >
-                GPT-3.5
+                <span style={{ marginRight: '5px' }}>GPT-3.5</span>
+                {props.loadingGpt &&
+                  <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
               </button>
             </li>
             <li className="nav-item">
@@ -48,7 +53,12 @@ function ModalPreview(props) {
                 className={`nav-link ${activeTab === 'tab2' ? 'active' : ''}`}
                 onClick={() => handleTabChange('tab2')}
               >
-                Gemini
+                <span style={{ marginRight: '5px' }}>Gemini</span>
+                {props.loadingGemini &&
+                  <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
               </button>
             </li>
             {/* Add more tabs as needed */}
