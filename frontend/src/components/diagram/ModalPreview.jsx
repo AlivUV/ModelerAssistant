@@ -5,15 +5,19 @@ import PanelPreview from './PanelPreview';
 // BPMN
 
 function ModalPreview(props) {
-  const [activeTab, setActiveTab] = useState('tab1'); // Estado para gestionar la pestaña activa
+  const [activeTab, setActiveTab] = useState('gpt'); // Estado para gestionar la pestaña activa
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
   const handleClose = useCallback(() => {
-    console.log(props.setOpened);
     props.setOpened(false)
   }, [props])
+
+  const handleCreate = () => {
+    props.repaint(props.diagrams[activeTab].xml)
+    props.closeModals();
+  };
 
   return (
     <div
@@ -37,8 +41,8 @@ function ModalPreview(props) {
           <ul className="nav nav-tabs">
             <li className="nav-item">
               <button
-                className={`nav-link ${activeTab === 'tab1' ? 'active' : ''}`}
-                onClick={() => handleTabChange('tab1')}
+                className={`nav-link ${activeTab === 'gpt' ? 'active' : ''}`}
+                onClick={() => handleTabChange('gpt')}
               >
                 <span style={{ marginRight: '5px' }}>GPT-3.5</span>
                 {props.loadingGpt &&
@@ -50,8 +54,8 @@ function ModalPreview(props) {
             </li>
             <li className="nav-item">
               <button
-                className={`nav-link ${activeTab === 'tab2' ? 'active' : ''}`}
-                onClick={() => handleTabChange('tab2')}
+                className={`nav-link ${activeTab === 'gemini' ? 'active' : ''}`}
+                onClick={() => handleTabChange('gemini')}
               >
                 <span style={{ marginRight: '5px' }}>Gemini</span>
                 {props.loadingGemini &&
@@ -67,13 +71,13 @@ function ModalPreview(props) {
           {/* Tab Content */}
           <div className="tab-content">
             <div
-              className={`tab-pane fade ${activeTab === 'tab1' ? 'show active' : ''}`}
+              className={`tab-pane fade ${activeTab === 'gpt' ? 'show active' : ''}`}
             >
               {/* Content for Tab 1 */}
               <PanelPreview id={'gpt'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
             </div>
             <div
-              className={`tab-pane fade ${activeTab === 'tab2' ? 'show active' : ''}`}
+              className={`tab-pane fade ${activeTab === 'gemini' ? 'show active' : ''}`}
             >
               {/* Content for Tab 2 */}
               {/* Add content for Tab 2 */}
@@ -81,9 +85,9 @@ function ModalPreview(props) {
             </div>
             {/* Add more tab content as needed */}
           </div>
-
           <div className="modal-footer border-0">
             <button type="button" onClick={handleClose} className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
+            <button type="submit" onClick={handleCreate} className="btn-one shadow-lg py-1">Create</button>
           </div>
         </div>
       </div>

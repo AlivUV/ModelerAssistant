@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { calculateDiagramMicroservices, getDiagram as getInfoDiagram, updateDiagram } from '../../service/DiagramService';
 import { addRules } from '../../service/AprioriService';
@@ -34,7 +34,7 @@ function ModelerComponent() {
   const [modalPropertiesPanel, setModalPropertiesPanel] = useState('');
   const [refModalUserStories] = useState(React.createRef());
   const [refModalAssistant] = useState(React.createRef());
-  const [, setModalAssistant] = useState('');
+  const [modalAssistant, setModalAssistant] = useState('');
   const [modalPdf, setModalPdf] = useState('');
   const [refModalPdf] = useState(React.createRef());
   const [modalUserStories, setModalUserStories] = useState('');
@@ -54,9 +54,14 @@ function ModelerComponent() {
     xml: '',
   });
 
-  async function run(bpmnModeler, xml) {
+  const repaint = (xml) => {
+    console.log(xml)
+    run(instanceModeler, xml)
+  }
+
+  function run(bpmnModeler, xml) {
     try {
-      await bpmnModeler.importXML(xml).then(() => {
+      bpmnModeler.importXML(xml).then(() => {
         bpmnModeler.on('element.contextmenu', HIGH_PRIORITY, (e) => {
           e.originalEvent.preventDefault();
           e.originalEvent.stopPropagation();
@@ -617,7 +622,7 @@ function ModelerComponent() {
       <ModalPdf jsonCreate={jsonCreate} modeler={instanceModeler} modalPdf={modalPdf} refModalPdf={refModalPdf}></ModalPdf>
       <ModalUserStories jsonCreate={jsonCreate} modeler={instanceModeler} modalUserStories={modalUserStories} refModalUserStories={refModalUserStories} openModalPdf={openModalPdf} loadCreateUserStories={loadCreateUserStories}></ModalUserStories>
       <Alert type={alertType} message={alertMessage} refAlertElement={refAlertElement} />
-      <ModalAssistant refModalAssistant={refModalAssistant} ></ModalAssistant>
+      <ModalAssistant refModalAssistant={refModalAssistant} repaint={repaint} modalAssistant={modalAssistant}></ModalAssistant>
     </div>
   )
 }

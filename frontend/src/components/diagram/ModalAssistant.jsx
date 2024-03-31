@@ -18,6 +18,7 @@ function ModalAssistant(props) {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
+  const [modalPreview, setModalPreview] = useState();
   const [previewDiagrams, setPreviewDiagrams] = useState({
     gpt: { ...props.diagram, xml: '' },
     gemini: { ...props.diagram, xml: '' }
@@ -49,9 +50,16 @@ function ModalAssistant(props) {
   const openModalPreview = async () => {
     const modal = new Modal(refModalPreview.current, options);
     modal.show();
-
+    setModalPreview(modal);
     setModalOpened(true);
   }
+
+  const closeModals = () => {
+    modalPreview.hide();
+    props.modalAssistant.hide();
+  };
+
+
 
   const startRecording = () => {
     if (isRecording) {
@@ -123,6 +131,7 @@ function ModalAssistant(props) {
       const start = Date.now();
       setIsLoadingGpt(true);
       setIsLoadingGemini(true);
+      let diagramas = previewDiagrams;
 
       AssistantService.gpt(description, activities)
         .then(response => {
@@ -133,45 +142,42 @@ function ModalAssistant(props) {
           ]);
           */
 
-          setPreviewDiagrams({
-            ...previewDiagrams,
+          diagramas = {
+            ...diagramas,
             gpt: {
-              ...previewDiagrams.gpt,
+              ...diagramas.gpt,
               xml: response.xml
             }
-          });
+          };
+          setPreviewDiagrams(diagramas);
           console.log(`El asistente GPT se tomó: ${Date.now() - start}`);
           setIsLoadingGpt(false);
         });
 
       AssistantService.gemini(description, activities)
         .then(response => {
-          setPreviewDiagrams({
-            ...previewDiagrams,
+          diagramas = {
+            ...diagramas,
             gemini: {
-              ...previewDiagrams.gemini,
+              ...diagramas.gemini,
               xml: response.xml
             }
-          });
+          };
+          setPreviewDiagrams(diagramas);
           console.log(`El asistente Gemini se tomó: ${Date.now() - start}`);
           setIsLoadingGemini(false);
         });
-
     }
   }
 
   const handleSubmit = async (evt) => {
     evt.preventDefault();
 
-    //setIsLoading(true);
-
     if (record.length > 1) {
       await assistant(description)
     } else {
       await assistant(description, activities)
     }
-
-    //setIsLoading(false);
 
     openModalPreview();
   };
@@ -202,7 +208,7 @@ function ModalAssistant(props) {
                     </button>
                   </div>
                 </div>
-                <textarea className="form-control" required value={description} rows="5" onChange={handleChangeDescription} name='description' ></textarea>
+                <textarea className="form-control" required value={description} rows="5" onChange={handleChangeDescription} name='description' style={{ overflow: 'auto', resize: 'vertical' }}></textarea>
               </div>
               <hr className="hr hr-blurry" />  {/*Divider*/}
               {
@@ -248,13 +254,12 @@ function ModalAssistant(props) {
               }
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
-                <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
                 {
                   (record.length > 1)
                     ? <button type="submit" className="btn-one shadow-lg py-1"
                       disabled={isLoadingGpt}> Modify</button>
                     : <button type="submit" className="btn-one shadow-lg py-1"
-                      disabled={isLoadingGpt}>Create</button>
+                      disabled={isLoadingGpt}>Preview</button>
                 }
               </div>
               {isLoadingGpt ?
@@ -268,7 +273,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loadingGpt={isLoadingGpt} loadingGemini={isLoadingGemini}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loadingGpt={isLoadingGpt} loadingGemini={isLoadingGemini} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
     </div>
   )
 }
