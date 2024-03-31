@@ -255,11 +255,17 @@ function ModalAssistant(props) {
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 {
+                  (previewDiagrams.gpt.xml === "" && previewDiagrams.gemini.xml === "")
+                    ? <></>
+                    : <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
+                }
+
+                {
                   (record.length > 1)
                     ? <button type="submit" className="btn-one shadow-lg py-1"
                       disabled={isLoadingGpt}> Modify</button>
                     : <button type="submit" className="btn-one shadow-lg py-1"
-                      disabled={isLoadingGpt}>Preview</button>
+                      disabled={isLoadingGpt}>Generate</button>
                 }
               </div>
               {isLoadingGpt ?
