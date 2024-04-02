@@ -483,10 +483,14 @@ export const buildBPMN = (jsonBPMN) => {
     }
 
     jsonBPMN.flows.forEach(flow => {
-        const [sParticipant, source] = findElement(flow.source, bpmn.participants);
-        const [tParticipant, target] = findElement(flow.target, bpmn.participants);
+        try {
+            const [sParticipant, source] = findElement(flow.source, bpmn.participants);
+            const [tParticipant, target] = findElement(flow.target, bpmn.participants);
 
-        bpmn = addFlow(source, sParticipant, target, tParticipant, bpmn);
+            bpmn = addFlow(source, sParticipant, target, tParticipant, bpmn);
+        } catch (error) {
+            // Continue to the next flow.
+        }
     });
 
     return bpmn.xml;
