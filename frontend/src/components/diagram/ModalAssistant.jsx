@@ -21,6 +21,7 @@ function ModalAssistant(props) {
   const [modalPreview, setModalPreview] = useState();
   const [previewDiagrams, setPreviewDiagrams] = useState({
     gpt: { ...props.diagram, xml: '' },
+    gptTunned: { ...props.diagram, xml: '' },
     gemini: { ...props.diagram, xml: '' }
   });
   const [refModalPreview] = useState(React.createRef());
@@ -151,6 +152,20 @@ function ModalAssistant(props) {
           };
           setPreviewDiagrams(diagramas);
           console.log(`El asistente GPT se tomó: ${Date.now() - start}`);
+          setIsLoadingGpt(false);
+        });
+
+      AssistantService.gptTunned(description, activities)
+        .then(response => {
+          diagramas = {
+            ...diagramas,
+            gptTunned: {
+              ...diagramas.gptTunned,
+              xml: response.xml
+            }
+          };
+          setPreviewDiagrams(diagramas);
+          console.log(`El asistente GPT-Tunned se tomó: ${Date.now() - start}`);
           setIsLoadingGpt(false);
         });
 

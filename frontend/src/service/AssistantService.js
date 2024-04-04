@@ -104,6 +104,21 @@ export const gpt = async (description, activities, record = [{ role: 'system', c
         .then(({ message, json }) => { console.log(json); return { message: message, xml: buildBPMN(json) } });
 }
 
+export const gptTunned = async (description, activities, record = [{ role: 'system', content: 'You are a bpm expert who gives diagrams in json format' }]) => {
+    return await fetch(`${API_URL}/assistant/gpt/tunned/`, {
+        method: "POST",
+        body: JSON.stringify({
+            messages: [
+                ...record,
+                { role: 'user', content: description }
+            ]
+        })
+    })
+        .then(response => response.json())
+        .then(({ data }) => { return { message: data.message, json: JSON.parse(data.xml) } })
+        .then(({ message, json }) => { console.log(json); return { message: message, xml: buildBPMN(json) } });
+}
+
 export const gemini = async (description, activities, record = [{ role: 'system', content: 'You are a helpful assistant.' }]) => {
     return await fetch(`${API_URL}/assistant/gemini/`, {
         method: "POST",

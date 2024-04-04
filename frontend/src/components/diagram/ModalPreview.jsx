@@ -54,6 +54,19 @@ function ModalPreview(props) {
             </li>
             <li className="nav-item">
               <button
+                className={`nav-link ${activeTab === 'gptTunned' ? 'active' : ''}`}
+                onClick={() => handleTabChange('gptTunned')}
+              >
+                <span style={{ marginRight: '5px' }}>GPT-3.5-Tunned</span>
+                {props.loadingGpt &&
+                  <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                }
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
                 className={`nav-link ${activeTab === 'gemini' ? 'active' : ''}`}
                 onClick={() => handleTabChange('gemini')}
               >
@@ -75,6 +88,13 @@ function ModalPreview(props) {
             >
               {/* Content for Tab 1 */}
               <PanelPreview id={'gpt'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
+            </div>
+            <div
+              className={`tab-pane fade ${activeTab === 'gptTunned' ? 'show active' : ''}`}
+            >
+              {/* Content for Tab 3 */}
+              {/* Add content for Tab 3 */}
+              <PanelPreview id={'gptTunned'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
             </div>
             <div
               className={`tab-pane fade ${activeTab === 'gemini' ? 'show active' : ''}`}

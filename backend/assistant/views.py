@@ -1,7 +1,7 @@
 import os
 import json
-import openai
 import environ
+from openai import OpenAI
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -28,7 +28,7 @@ def get_env(key, default=None):
 def gpt(request):
     body = json.loads(request.body.decode('utf-8'))
 
-    openai.api_key = get_env("OPENAI_API_KEY")
+    openai = OpenAI(api_key=get_env("OPENAI_API_KEY"))
 
     print('=================================')
     print('=================================')
@@ -37,8 +37,44 @@ def gpt(request):
 
     print('gpt in progress')
 
-    completion = openai.ChatCompletion.create(
+    completion = openai.chat.completions.create(
         model="gpt-3.5-turbo",
+        messages=body['messages']
+    )
+
+    print('=================================')
+    print('=================================')
+    print('=================================')
+    print('=================================')
+
+    if (completion.choices[0].message.content[0] != '{'):
+        print('Split')
+        completion.choices[0].message.content = completion.choices[0].message.content.split('```')[1][5:]
+
+    data = {
+        'data': {
+            'message': body['messages'][-1]['content'],
+            'xml': completion.choices[0].message.content
+        }
+    }
+    return Response(data, status = status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def gptTunned(request):
+    body = json.loads(request.body.decode('utf-8'))
+
+    openai = OpenAI(api_key=get_env("OPENAI_API_KEY_PREMIUM"))
+
+    print('=================================')
+    print('=================================')
+    print('=================================')
+    print('=================================')
+
+    print('gpt-tunned in progress')
+
+    completion = openai.chat.completions.create(
+        model="ft:gpt-3.5-turbo-0125:personal::9A7kZudv",
         messages=body['messages']
     )
 
