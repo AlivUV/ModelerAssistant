@@ -58,7 +58,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gptTunned')}
               >
                 <span style={{ marginRight: '5px' }}>GPT-3.5-Tunned</span>
-                {props.loadingGpt &&
+                {props.loadingGptTunned &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>

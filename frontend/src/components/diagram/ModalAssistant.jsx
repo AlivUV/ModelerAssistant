@@ -15,6 +15,7 @@ function ModalAssistant(props) {
   const [description, setDescription] = useState('');
   const [isLoadingGpt, setIsLoadingGpt] = useState(false);
   const [isLoadingGemini, setIsLoadingGemini] = useState(false);
+  const [isLoadingGptTunned, setIsLoadingGptTunned] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
@@ -132,6 +133,7 @@ function ModalAssistant(props) {
       const start = Date.now();
       setIsLoadingGpt(true);
       setIsLoadingGemini(true);
+      setIsLoadingGptTunned(true);
       let diagramas = previewDiagrams;
 
       AssistantService.gpt(description, activities)
@@ -166,7 +168,7 @@ function ModalAssistant(props) {
           };
           setPreviewDiagrams(diagramas);
           console.log(`El asistente GPT-Tunned se tomó: ${Date.now() - start}`);
-          setIsLoadingGpt(false);
+          setIsLoadingGptTunned(false);
         });
 
       AssistantService.gemini(description, activities)
@@ -294,7 +296,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loadingGpt={isLoadingGpt} loadingGemini={isLoadingGemini} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loadingGpt={isLoadingGpt} loadingGemini={isLoadingGemini} loadingGptTunned={isLoadingGptTunned} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
     </div>
   )
 }
