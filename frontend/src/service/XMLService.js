@@ -2,6 +2,7 @@ const xInit = 0;
 const xPad = 50;
 const yPad = 50;
 
+
 /**
  * Creates the object of an empty bpmn.
  * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
@@ -9,6 +10,7 @@ const yPad = 50;
 const initBPMN = () => {
     return {
         startEvts: 0,
+        interEvts: 0,
         endEvts: 0,
         tasks: 0,
         flows: 0,
@@ -26,6 +28,7 @@ const initBPMN = () => {
 </bpmndi:BPMNDiagram>
     `};
 }
+
 
 /**
  * Modify the current diagram by adding a participant.
@@ -118,6 +121,7 @@ const addXmlElement = (xmlDefinition, xmlDiagram, participantId, xml) => {
     return addDiagram(xmlDiagram, participantId, xml)
 }
 
+
 /**
  * Modify the current diagram by adding a start event at the specified participant.
  * @param {Number} participantId The id of the participant to which the event is to be added.
@@ -153,7 +157,153 @@ const addStart = (startName, participantId, bpmn) => {
 
 
 /**
- * Modify the current diagram by adding a start event at the specified participant.
+ * Modify the current diagram by adding a message start event which receives a message at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addMessageStart = (startName, participantId, bpmn) => {
+    const id = bpmn.startEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:startEvent id="StartEvent_${id}" name="${startName}">
+            <bpmn:messageEventDefinition id="MessageStart_${id}" />
+        </bpmn:startEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="StartEvent_${id}_di" bpmnElement="StartEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "MessageStart",
+        id: `StartEvent_${id}`,
+        name: startName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.startEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a timer start event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addTimerStart = (startName, participantId, bpmn) => {
+    const id = bpmn.startEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:startEvent id="StartEvent_${id}" name="${startName}">
+            <bpmn:timerEventDefinition id="TimerStart_${id}" />
+        </bpmn:startEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="StartEvent_${id}_di" bpmnElement="StartEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "TimerStart",
+        id: `StartEvent_${id}`,
+        name: startName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.startEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a start event which receives a condition at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addConditionalStart = (startName, participantId, bpmn) => {
+    const id = bpmn.startEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:startEvent id="StartEvent_${id}" name="${startName}">
+            <bpmn:conditionalEventDefinition id="ConditionalStart_${id}">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression" />
+            </bpmn:conditionalEventDefinition>
+        </bpmn:startEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="StartEvent_${id}_di" bpmnElement="StartEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ConditionalStart",
+        id: `StartEvent_${id}`,
+        name: startName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.startEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a timer start event which receives a message at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addSignalStart = (startName, participantId, bpmn) => {
+    const id = bpmn.startEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:startEvent id="StartEvent_${id}" name="${startName}">
+            <bpmn:signalEventDefinition id="Signaltart_${id}" />
+        </bpmn:startEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="StartEvent_${id}_di" bpmnElement="StartEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "SignalStart",
+        id: `StartEvent_${id}`,
+        name: startName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.startEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an end event at the specified participant.
  * @param {Number} participantId The id of the participant to which the event is to be added.
  * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
  *  A valid object representing the actual bpmn diagram.
@@ -187,6 +337,618 @@ const addEnd = (endName, participantId, bpmn) => {
 
 
 /**
+ * Modify the current diagram by adding an message end event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addMessageEnd = (endName, participantId, bpmn) => {
+    const id = bpmn.endEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const endDef = `\t\t<bpmn:endEvent id="EndEvent_${id}" name="${endName}">
+            <bpmn:messageEventDefinition id="MessageEnd_${id}" />
+        </bpmn:endEvent>\n`;
+    const endDiagram = `\t\t<bpmndi:BPMNShape id="EndEvent_${id}_di" bpmnElement="EndEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(endDef, endDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "MessageEnd",
+        id: `EndEvent_${id}`,
+        name: endName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.endEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an error end event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addErrorEnd = (endName, participantId, bpmn) => {
+    const id = bpmn.endEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const endDef = `\t\t<bpmn:endEvent id="EndEvent_${id}" name="${endName}">
+            <bpmn:errorEventDefinition id="ErrorEnd_${id}" />
+        </bpmn:endEvent>\n`;
+    const endDiagram = `\t\t<bpmndi:BPMNShape id="EndEvent_${id}_di" bpmnElement="EndEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(endDef, endDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ErrorEnd",
+        id: `EndEvent_${id}`,
+        name: endName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.endEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an escalation end event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addEscalationEnd = (endName, participantId, bpmn) => {
+    const id = bpmn.endEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const endDef = `\t\t<bpmn:endEvent id="EndEvent_${id}" name="${endName}">
+            <bpmn:escalationEventDefinition id="EscalationEnd_${id}" />
+        </bpmn:endEvent>\n`;
+    const endDiagram = `\t\t<bpmndi:BPMNShape id="EndEvent_${id}_di" bpmnElement="EndEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(endDef, endDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "EscalationEnd",
+        id: `EndEvent_${id}`,
+        name: endName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.endEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a signal end event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addSignalEnd = (endName, participantId, bpmn) => {
+    const id = bpmn.endEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const endDef = `\t\t<bpmn:endEvent id="EndEvent_${id}" name="${endName}">
+            <bpmn:signalEventDefinition id="SignalEnd_${id}" />
+        </bpmn:endEvent>\n`;
+    const endDiagram = `\t\t<bpmndi:BPMNShape id="EndEvent_${id}_di" bpmnElement="EndEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(endDef, endDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "SignalEnd",
+        id: `EndEvent_${id}`,
+        name: endName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.endEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a compensation end event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addCompensationEnd = (endName, participantId, bpmn) => {
+    const id = bpmn.endEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const endDef = `\t\t<bpmn:endEvent id="EndEvent_${id}" name="${endName}">
+            <bpmn:compensateEventDefinition id="CompensationEnd_${id}" />
+        </bpmn:endEvent>\n`;
+    const endDiagram = `\t\t<bpmndi:BPMNShape id="EndEvent_${id}_di" bpmnElement="EndEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(endDef, endDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "CompensationEnd",
+        id: `EndEvent_${id}`,
+        name: endName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.endEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a terminate end event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addTerminateEnd = (endName, participantId, bpmn) => {
+    const id = bpmn.endEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const endDef = `\t\t<bpmn:endEvent id="EndEvent_${id}" name="${endName}">
+            <bpmn:terminateEventDefinition id="TerminateEnd_${id}" />
+        </bpmn:endEvent>\n`;
+    const endDiagram = `\t\t<bpmndi:BPMNShape id="EndEvent_${id}_di" bpmnElement="EndEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(endDef, endDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "TerminateEnd",
+        id: `EndEvent_${id}`,
+        name: endName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.endEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addIntermediateEvent = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateThrowEvent id="IntermediateEvent_${id}" name="${intermediateName}">\n\t\t</bpmn:intermediateThrowEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "IntermediateEvent",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addTimerIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateCatchEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:timerEventDefinition id="TimerIntermediate_${id}" />
+        </bpmn:intermediateCatchEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "TimerIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addMessageCatchIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateCatchEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:messageEventDefinition id="MessageCatchIntermediate_${id}" />
+        </bpmn:intermediateCatchEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "MessageCatchIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addMessageThrowIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateThrowEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:messageEventDefinition id="MessageThrowIntermediate_${id}" />
+        </bpmn:intermediateThrowEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "MessageThrowIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addEscalationIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateThrowEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:escalationEventDefinition id="EscalationIntermediate_${id}" />
+        </bpmn:intermediateThrowEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "EscalationIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addConditionalIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateCatchEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:conditionalEventDefinition id="ConditionalIntermediate_${id}">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression" />
+            </bpmn:conditionalEventDefinition>
+        </bpmn:intermediateCatchEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ConditionalIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addCompensationIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateThrowEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:compensateEventDefinition id="CompensationIntermediate_${id}" />
+        </bpmn:intermediateThrowEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "CompensationIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addLinkCatchIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateCatchEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:linkEventDefinition id="LinkCatchIntermediate_${id}" />
+        </bpmn:intermediateCatchEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "LinkCatchIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addLinkThrowIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateThrowEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:linkEventDefinition id="LinkThrowIntermediate_${id}" />
+        </bpmn:intermediateThrowEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "LinkThrowIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addSignalCatchIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateCatchEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:signalEventDefinition id="SignalCatchIntermediate_${id}" />
+        </bpmn:intermediateCatchEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "SignalCatchIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an intermediate event at the specified participant.
+ * @param {Number} participantId The id of the participant to which the event is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addSignalThrowIntermediate = (intermediateName, participantId, bpmn) => {
+    const id = bpmn.interEvts + 1;
+    const width = 36;
+    const height = 36;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const startDef = `\t\t<bpmn:intermediateThrowEvent id="IntermediateEvent_${id}" name="${intermediateName}">
+            <bpmn:signalEventDefinition id="SignalThrowIntermediate_${id}" />
+        </bpmn:intermediateThrowEvent>\n`;
+    const startDiagram = `\t<bpmndi:BPMNShape id="IntermediateEvent_${id}_di" bpmnElement="IntermediateEvent_${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(startDef, startDiagram, participantId, bpmn.xml);
+
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "SignalThrowIntermediate",
+        id: `IntermediateEvent_${id}`,
+        name: intermediateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.interEvts += 1;
+    return bpmn;
+}
+
+
+/**
  * Modify the current diagram by adding a task at the specified participant.
  * @param {String} taskName The name of the new task.
  * @param {Number} participantId The id of the participant to which the task is to be added.
@@ -199,7 +961,7 @@ const addTask = (taskName, participantId, bpmn) => {
     const width = 100;
     const height = 80
     const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
-    const taskDef = `\t\t<bpmn:Task id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:Task>\n`;
+    const taskDef = `\t\t<bpmn:task id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:task>\n`;
     const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
             <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
             <bpmndi:BPMNLabel />
@@ -209,6 +971,258 @@ const addTask = (taskName, participantId, bpmn) => {
     bpmn.participants[participantId].lastX += xPad + width;
     bpmn.participants[participantId].elements.push({
         type: "Task",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding an user task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addUserTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:userTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:userTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "UserTask",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a manual task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addManualTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:manualTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:manualTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ManualTask",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a service task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addServiceTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:serviceTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:serviceTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ServiceTask",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a message catch task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addMessageCatchTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:receiveTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:receiveTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "MessageCatchTask",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a message throw task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addMessageThrowTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:sendTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:sendTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "MessageThrowTask",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a business rule task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addBusinessRuleTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:businessRuleTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:businessRuleTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "BusinessRuleTask",
+        id: `US-${id}`,
+        name: taskName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.tasks += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * Modify the current diagram by adding a script task at the specified participant.
+ * @param {String} taskName The name of the new task.
+ * @param {Number} participantId The id of the participant to which the task is to be added.
+ * @param {{startEvts: Number, participants: Array, xml: String}} bpmn 
+ *  A valid object representing the actual bpmn diagram.
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addScriptTask = (taskName, participantId, bpmn) => {
+    const id = bpmn.tasks + 1;
+    const width = 100;
+    const height = 80
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const taskDef = `\t\t<bpmn:scriptTask id="US-${id}" name="${taskName}" uh:priority="Very low" uh:points="1" uh:smart="false">\n\t\t</bpmn:scriptTask>\n`;
+    const taskXML = `\t\t<bpmndi:BPMNShape id="US-${id}_di" bpmnElement="US-${id}">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+            <bpmndi:BPMNLabel />
+        </bpmndi:BPMNShape>\n\t`;
+
+    bpmn.xml = addXmlElement(taskDef, taskXML, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ScriptTask",
         id: `US-${id}`,
         name: taskName,
         width: width,
@@ -336,9 +1350,10 @@ const addMessageFlow = (sourceTask, targetTask, bpmn) => {
 
 
 const addFlow = (sourceTask, sourceParticipant, targetTask, targetParticipant, bpmn) => {
+    // Both tasks belong to the same participant.
     if (sourceParticipant === targetParticipant)
         return addSequenceFlow(sourceTask, targetTask, sourceParticipant, bpmn);
-
+    // Two participants communicate between tasks
     return addMessageFlow(sourceTask, targetTask, bpmn);
 }
 
@@ -378,20 +1393,224 @@ const addGateway = (gateName, participantId, bpmn) => {
 }
 
 
+/**
+ * 
+ * @param {String} gateName 
+ * @param {Number} participantId 
+ * @param {{gateways: Number, participants: Array, xml: String}} bpmn 
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addInclusiveGateway = (gateName, participantId, bpmn) => {
+    const id = bpmn.gateways + 1;
+    const width = 50;
+    const height = 50;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const gatewayDef = `<bpmn:inclusiveGateway id="Gateway_${id}" name="${gateName}">
+        </bpmn:inclusiveGateway>\n`
+    const gatewayDiagram = `\t\t<bpmndi:BPMNShape id="Gateway_${id}_di" bpmnElement="Gateway_${id}" isMarkerVisible="true">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n`
+
+    bpmn.xml = addXmlElement(gatewayDef, gatewayDiagram, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "InclusiveGateway",
+        id: `Gateway_${id}`,
+        name: gateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.gateways += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * 
+ * @param {String} gateName 
+ * @param {Number} participantId 
+ * @param {{gateways: Number, participants: Array, xml: String}} bpmn 
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addParallelGateway = (gateName, participantId, bpmn) => {
+    const id = bpmn.gateways + 1;
+    const width = 50;
+    const height = 50;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const gatewayDef = `<bpmn:parallelGateway id="Gateway_${id}" name="${gateName}">
+        </bpmn:parallelGateway>\n`
+    const gatewayDiagram = `\t\t<bpmndi:BPMNShape id="Gateway_${id}_di" bpmnElement="Gateway_${id}" isMarkerVisible="true">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n`
+
+    bpmn.xml = addXmlElement(gatewayDef, gatewayDiagram, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ParallelGateway",
+        id: `Gateway_${id}`,
+        name: gateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.gateways += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * 
+ * @param {String} gateName 
+ * @param {Number} participantId 
+ * @param {{gateways: Number, participants: Array, xml: String}} bpmn 
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addEventBasedGateway = (gateName, participantId, bpmn) => {
+    const id = bpmn.gateways + 1;
+    const width = 50;
+    const height = 50;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const gatewayDef = `<bpmn:eventBasedGateway id="Gateway_${id}" name="${gateName}">
+        </bpmn:eventBasedGateway>\n`
+    const gatewayDiagram = `\t\t<bpmndi:BPMNShape id="Gateway_${id}_di" bpmnElement="Gateway_${id}" isMarkerVisible="true">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n`
+
+    bpmn.xml = addXmlElement(gatewayDef, gatewayDiagram, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "EventBasedGateway",
+        id: `Gateway_${id}`,
+        name: gateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.gateways += 1;
+
+    return bpmn;
+}
+
+
+/**
+ * 
+ * @param {String} gateName 
+ * @param {Number} participantId 
+ * @param {{gateways: Number, participants: Array, xml: String}} bpmn 
+ * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
+ */
+const addComplexGateway = (gateName, participantId, bpmn) => {
+    const id = bpmn.gateways + 1;
+    const width = 50;
+    const height = 50;
+    const yCenter = bpmn.participants[participantId].y + (bpmn.participants[participantId].height / 2);
+    const gatewayDef = `<bpmn:complexGateway id="Gateway_${id}" name="${gateName}">\n\t\t</bpmn:complexGateway>\n`
+    const gatewayDiagram = `\t\t<bpmndi:BPMNShape id="Gateway_${id}_di" bpmnElement="Gateway_${id}" isMarkerVisible="true">
+            <dc:Bounds x="${bpmn.participants[participantId].lastX + xPad}" y="${yCenter - (height / 2)}" width="${width}" height="${height}" />
+        </bpmndi:BPMNShape>\n`
+
+    bpmn.xml = addXmlElement(gatewayDef, gatewayDiagram, participantId, bpmn.xml);
+    bpmn.participants[participantId].lastX += xPad + width;
+    bpmn.participants[participantId].elements.push({
+        type: "ComplexGateway",
+        id: `Gateway_${id}`,
+        name: gateName,
+        width: width,
+        height: height,
+        x: bpmn.participants[participantId].lastX - (width / 2),
+        y: yCenter
+    });
+    bpmn.gateways += 1;
+
+    return bpmn;
+}
+
+
 const addElement = (element, names, bpmn) => {
     switch (element.type.replaceAll(" ", "").toLowerCase()) {
+        // Start Events
         case names.startEvent:
             return addStart(element.name, element.participant, bpmn);
-        case names.task:
-            return addTask(element.name, element.participant, bpmn);
-        case names.usertask:
-            return addTask(element.name, element.participant, bpmn);
-        case names.servicetask:
-            return addTask(element.name, element.participant, bpmn);
-        case names.gateway:
-            return addGateway(element.name, element.participant, bpmn);
+        case names.messageStart:
+            return addMessageStart(element.name, element.participant, bpmn);
+        case names.timerStart:
+            return addTimerStart(element.name, element.participant, bpmn);
+        case names.signalStart:
+            return addSignalStart(element.name, element.participant, bpmn);
+        case names.conditionalStart:
+            return addConditionalStart(element.name, element.participant, bpmn);
+        // End Events
         case names.endEvent:
             return addEnd(element.name, element.participant, bpmn);
+        case names.messageEnd:
+            return addMessageEnd(element.name, element.participant, bpmn);
+        case names.errorEnd:
+            return addErrorEnd(element.name, element.participant, bpmn);
+        case names.escalationEnd:
+            return addEscalationEnd(element.name, element.participant, bpmn);
+        case names.signalEnd:
+            return addSignalEnd(element.name, element.participant, bpmn);
+        case names.compensationEnd:
+            return addCompensationEnd(element.name, element.participant, bpmn);
+        case names.terminateEnd:
+            return addTerminateEnd(element.name, element.participant, bpmn);
+        // Intermediate events
+        case names.intermediateEvent:
+            return addIntermediateEvent(element.name, element.participant, bpmn);
+        case names.timerIntermediate:
+            return addTimerIntermediate(element.name, element.participant, bpmn);
+        case names.messageCatchIntermediate:
+            return addMessageCatchIntermediate(element.name, element.participant, bpmn);
+        case names.messageThrowIntermediate:
+            return addMessageThrowIntermediate(element.name, element.participant, bpmn);
+        case names.escalationIntermediate:
+            return addEscalationIntermediate(element.name, element.participant, bpmn);
+        case names.conditionalIntermediate:
+            return addConditionalIntermediate(element.name, element.participant, bpmn);
+        case names.compensationIntermediate:
+            return addCompensationIntermediate(element.name, element.participant, bpmn);
+        case names.linkCatchIntermediate:
+            return addLinkCatchIntermediate(element.name, element.participant, bpmn);
+        case names.linkThrowIntermediate:
+            return addLinkThrowIntermediate(element.name, element.participant, bpmn);
+        case names.signalCatchIntermediate:
+            return addSignalCatchIntermediate(element.name, element.participant, bpmn);
+        case names.signalThrowIntermediate:
+            return addSignalThrowIntermediate(element.name, element.participant, bpmn);
+        // Tasks
+        case names.task:
+            return addTask(element.name, element.participant, bpmn);
+        case names.userTask:
+            return addUserTask(element.name, element.participant, bpmn);
+        case names.manualTask:
+            return addManualTask(element.name, element.participant, bpmn);
+        case names.serviceTask:
+            return addServiceTask(element.name, element.participant, bpmn);
+        case names.messageCatchTask:
+            return addMessageCatchTask(element.name, element.participant, bpmn);
+        case names.messageThrowTask:
+            return addMessageThrowTask(element.name, element.participant, bpmn);
+        case names.businessRuleTask:
+            return addBusinessRuleTask(element.name, element.participant, bpmn);
+        case names.scriptTask:
+            return addScriptTask(element.name, element.participant, bpmn);
+        // Gateways
+        case names.exclusiveGateway:
+            return addGateway(element.name, element.participant, bpmn);
+        case names.inclusiveGateway:
+            return addInclusiveGateway(element.name, element.participant, bpmn);
+        case names.parallelGateway:
+            return addParallelGateway(element.name, element.participant, bpmn);
+        case names.eventBasedGateway:
+            return addEventBasedGateway(element.name, element.participant, bpmn);
+        case names.complexGateway:
+            return addComplexGateway(element.name, element.participant, bpmn);
 
         default:
             return addTask(element.name, element.participant, bpmn);
@@ -433,9 +1652,46 @@ const findElement = (elementName, participants) => {
 
 
 export const buildBPMN = (jsonBPMN) => {
-    let bpmn = initBPMN();
+    const names = {
+        startEvent: "startevent",
+        timerStart: "timerstart",
+        messageStart: "messagestart",
+        conditionalStart: "conditionalstart",
+        signalStart: "signalstart",
+        endEvent: "endevent",
+        messageEnd: "messageend",
+        errorEnd: "errorend",
+        escalationEnd: "escalationend",
+        signalEnd: "signalend",
+        compensationEnd: "compensationend",
+        terminateEnd: "terminateend",
+        intermediateEvent: "intermediateevent",
+        timerIntermediate: "timerintermediate",
+        messageCatchIntermediate: "messagecatchintermediate",
+        messageThrowIntermediate: "messagethrowintermediate",
+        escalationIntermediate: "escalationintermediate",
+        conditionalIntermediate: "conditionalintermediate",
+        compensationIntermediate: "compensationintermediate",
+        linkCatchIntermediate: "linkcatchintermediate",
+        linkThrowIntermediate: "linkthrowintermediate",
+        signalCatchIntermediate: "signalcatchintermediate",
+        signalThrowIntermediate: "signalthrowintermediate",
+        task: "task",
+        userTask: "usertask",
+        manualTask: "manualtask",
+        serviceTask: "servicetask",
+        messageCatchTask: "messagecatchtask",
+        messageThrowTask: "messagethrowtask",
+        businessRuleTask: "businessruletask",
+        scriptTask: "scripttask",
+        exclusiveGateway: "exclusivegateway",
+        inclusiveGateway: "inclusivegateway",
+        parallelGateway: "parallelgateway",
+        eventBasedGateway: "eventbasedgateway",
+        complexGateway: "complexgateway"
+    }
 
-    //console.log(`Init xml building`);
+    let bpmn = initBPMN();
 
     if (!jsonBPMN.process) {
         jsonBPMN.process = jsonBPMN.Process;
@@ -466,14 +1722,6 @@ export const buildBPMN = (jsonBPMN) => {
             bpmn = addParticipant(participant.name, bpmn);
     });
 
-    const names = {
-        startEvent: "startevent",
-        task: "task",
-        usertask: "usertask",
-        servicetask: "servicetask",
-        gateway: "exclusivegateway",
-        endEvent: "endevent"
-    };
     for (let i = 0; i < jsonBPMN.elements.length; i++) {
         jsonBPMN.elements[i] = {
             ...jsonBPMN.elements[i],
@@ -495,3 +1743,200 @@ export const buildBPMN = (jsonBPMN) => {
 
     return bpmn.xml;
 }
+
+const newBPMN = {
+    participants: [
+        { name: "Start Events" },
+        { name: "End Events" },
+        { name: "Intermediate Events" },
+        { name: "Tasks" },
+        { name: "Gateways" }
+    ],
+    elements: [
+        {
+            type: "StartEvent",
+            name: "StartEvent",
+            participant: "Start Events"
+        },
+        {
+            type: "MessageStart",
+            name: "MessageStart",
+            participant: "Start Events"
+        },
+        {
+            type: "TimerStart",
+            name: "TimerStart",
+            participant: "Start Events"
+        },
+        {
+            type: "ConditionalStart",
+            name: "ConditionalStart",
+            participant: "Start Events"
+        },
+        {
+            type: "SignalStart",
+            name: "SignalStart",
+            participant: "Start Events"
+        },
+        {
+            type: "EndEvent",
+            name: "EndEvent",
+            participant: "End Events"
+        },
+        {
+            type: "MessageEnd",
+            name: "MessageEnd",
+            participant: "End Events"
+        },
+        {
+            type: "ErrorEnd",
+            name: "ErrorEnd",
+            participant: "End Events"
+        },
+        {
+            type: "EscalationEnd",
+            name: "EscalationEnd",
+            participant: "End Events"
+        },
+        {
+            type: "SignalEnd",
+            name: "SignalEnd",
+            participant: "End Events"
+        },
+        {
+            type: "CompensationEnd",
+            name: "CompensationEnd",
+            participant: "End Events"
+        },
+        {
+            type: "TerminateEnd",
+            name: "TerminateEnd",
+            participant: "End Events"
+        },
+        {
+            type: "IntermediateEvent",
+            name: "IntermediateEvent",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "TimerIntermediate",
+            name: "TimerIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "MessageCatchIntermediate",
+            name: "MessageCatchIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "MessageThrowIntermediate",
+            name: "MessageThrowIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "EscalationIntermediate",
+            name: "EscalationIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "ConditionalIntermediate",
+            name: "ConditionalIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "CompensationIntermediate",
+            name: "CompensationIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "LinkCatchIntermediate",
+            name: "LinkCatchIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "LinkThrowIntermediate",
+            name: "LinkThrowIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "SignalCatchIntermediate",
+            name: "SignalCatchIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "SignalThrowIntermediate",
+            name: "SignalThrowIntermediate",
+            participant: "Intermediate Events"
+        },
+        {
+            type: "Task",
+            name: "Task",
+            participant: "Tasks"
+        },
+        {
+            type: "UserTask",
+            name: "UserTask",
+            participant: "Tasks"
+        },
+        {
+            type: "ManualTask",
+            name: "ManualTask",
+            participant: "Tasks"
+        },
+        {
+            type: "ServiceTask",
+            name: "ServiceTask",
+            participant: "Tasks"
+        },
+        {
+            type: "MessageThrowTask",
+            name: "MessageThrowTask",
+            participant: "Tasks"
+        },
+        {
+            type: "MessageCatchTask",
+            name: "MessageCatchTask",
+            participant: "Tasks"
+        },
+        {
+            type: "BusinessRuleTask",
+            name: "BusinessRuleTask",
+            participant: "Tasks"
+        },
+        {
+            type: "ScriptTask",
+            name: "ScriptTask",
+            participant: "Tasks"
+        },
+        {
+            type: "ExclusiveGateway",
+            name: "ExclusiveGateway",
+            participant: "Gateways"
+        },
+        {
+            type: "InclusiveGateway",
+            name: "InclusiveGateway",
+            participant: "Gateways"
+        },
+        {
+            type: "ParallelGateway",
+            name: "ParallelGateway",
+            participant: "Gateways"
+        },
+        {
+            type: "EventBasedGateway",
+            name: "EventBasedGateway",
+            participant: "Gateways"
+        },
+        {
+            type: "ComplexGateway",
+            name: "ComplexGateway",
+            participant: "Gateways"
+        }
+    ],
+    flows: [
+
+    ]
+}
+
+console.log(buildBPMN(newBPMN));
