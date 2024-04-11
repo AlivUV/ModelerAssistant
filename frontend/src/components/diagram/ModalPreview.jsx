@@ -45,7 +45,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gpt')}
               >
                 <span style={{ marginRight: '5px' }}>GPT-3.5</span>
-                {props.loadingGpt &&
+                {props.loading.gpt &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
@@ -58,7 +58,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gptTunned')}
               >
                 <span style={{ marginRight: '5px' }}>GPT-3.5-Tunned</span>
-                {props.loadingGptTunned &&
+                {props.loading.gptTunned &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
@@ -71,7 +71,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gemini')}
               >
                 <span style={{ marginRight: '5px' }}>Gemini</span>
-                {props.loadingGemini &&
+                {props.loading.gemini &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>

@@ -4,7 +4,7 @@ import {
 
 import { buildBPMN } from './XMLService'
 
-const makePrompt = (description, activities) => {
+const makePromptGpt = (description) => {
     return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos: 
 
 Participantes del proceso.
@@ -37,7 +37,7 @@ Quiero que tu respuesta siga este mismo formato conservando su estructura:
 }
 
 
-const makePromptGemini = (description, activities) => {
+const makePromptGemini = (description) => {
     return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos:
 
     1. Participantes del proceso(participants).
@@ -70,76 +70,51 @@ const makePromptGemini = (description, activities) => {
     }`
 }
 
-/*
-const makePromptOld = (description, activities) => {
-    let prompt = `Proporciona el código XML sobre el diagrama BPMN de ${description}.\n`;
 
-    let finalPrompt = "Por favor, proporciona la representación del proceso en formato BPMN XML 2.0 incluyendo el xml correspondiente al diagrama '<bpmndi:BPMNDiagram'."
-
-    if (activities.length < 1)
-        return prompt + finalPrompt;
-
-    prompt += "El diagrama debe incluir mínimo las siguientes actividades clave:\n"
-
-    activities.forEach(activity => {
-        prompt += `* ${activity[0]}. Responsable: ${activity[1]}\n`
-    });
-
-    return prompt + finalPrompt
-}
-*/
-
-export const gpt = async (description, activities, record = [{ role: 'system', content: 'You are a helpful assistant.' }]) => {
-    return await fetch(`${API_URL}/assistant/gpt/`, {
+const fetcher = async (model, body) => {
+    return await fetch(`${API_URL}/assistant/${model}/`, {
         method: "POST",
-        body: JSON.stringify({
-            messages: [
-                ...record,
-                { role: 'user', content: makePrompt(description, activities) }
-            ]
-        })
+        body: body
     })
         .then(response => response.json())
-        .then(({ data }) => { return { message: data.message, json: JSON.parse(data.xml) } })
-        .then(({ message, json }) => { console.log(json); return { message: message, xml: buildBPMN(json) } });
+        .then(({ data }) => { console.log(model); console.log(data); return { message: data.message, modelResponse: "```json\n" + data.xml + "```", json: JSON.parse(data.xml) } })
+        .then(({ message, modelResponse, json }) => { return { message: message, json: modelResponse, xml: buildBPMN(json) } });
 }
 
-export const gptTunned = async (description, activities, record = [{ role: 'system', content: 'You are a bpm expert who gives diagrams in json format' }]) => {
-    return await fetch(`${API_URL}/assistant/gpt/tunned/`, {
-        method: "POST",
-        body: JSON.stringify({
-            messages: [
-                ...record,
-                { role: 'user', content: description }
-            ]
-        })
+
+export const gpt = async (description) => {
+    const body = JSON.stringify({
+        messages: [
+            { role: 'system', content: 'You are a helpful assistant.' },
+            { role: 'user', content: makePromptGpt(description) }
+        ]
     })
-        .then(response => response.json())
-        .then(({ data }) => { return { message: data.message, json: JSON.parse(data.xml) } })
-        .then(({ message, json }) => { console.log(json); return { message: message, xml: buildBPMN(json) } });
+    return await fetcher("gpt", body)
 }
 
-export const gemini = async (description, activities, record = [{ role: 'system', content: 'You are a helpful assistant.' }]) => {
-    return await fetch(`${API_URL}/assistant/gemini/`, {
-        method: "POST",
-        body: JSON.stringify({
-            prompt: makePromptGemini(description, activities)
-        })
+export const gptTunned = async (description) => {
+    const body = JSON.stringify({
+        messages: [
+            { role: 'system', content: 'You are a bpm expert who gives diagrams in json format' },
+            { role: 'user', content: description }
+        ]
     })
-        .then(response => response.json())
-        .then(({ data }) => { return { message: data.message, json: JSON.parse(data.xml) } })
-        .then(({ message, json }) => { return { message: message, xml: buildBPMN(json) } });
+    return await fetcher("gpt/tunned", body)
 }
 
-export const regenerate = async (description, record) => {
-    return await fetch(`${API_URL}/assistant/gpt/`, {
-        method: "POST",
-        body: JSON.stringify({
-            messages: [
-                ...record,
-                { role: 'user', content: 'Al código xml que generaste ' + description }
-            ]
-        })
+export const gemini = async (description) => {
+    const body = JSON.stringify({
+        prompt: makePromptGemini(description)
     })
-        .then(response => response.json())
+    return await fetcher("gemini", body)
+}
+
+export const gptModify = async (description, record) => {
+    const body = JSON.stringify({
+        messages: [
+            ...record,
+            { role: 'user', content: 'Al código json que generaste ' + description }
+        ]
+    })
+    return await fetcher("gpt", body)
 }

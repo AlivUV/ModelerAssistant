@@ -13,17 +13,15 @@ function ModalAssistant(props) {
   const [modalOpened, setModalOpened] = useState(true);
   const [activities, setActivities] = useState([]);
   const [description, setDescription] = useState('');
-  const [isLoadingGpt, setIsLoadingGpt] = useState(false);
-  const [isLoadingGemini, setIsLoadingGemini] = useState(false);
-  const [isLoadingGptTunned, setIsLoadingGptTunned] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [modalPreview, setModalPreview] = useState();
+  const [isLoading, setIsLoading] = useState({ gpt: false, gptTunned: false, gemini: false });
   const [previewDiagrams, setPreviewDiagrams] = useState({
-    gpt: { ...props.diagram, xml: '' },
-    gptTunned: { ...props.diagram, xml: '' },
-    gemini: { ...props.diagram, xml: '' }
+    gpt: { ...props.diagram, record: [{ role: 'system', content: 'You are a helpful assistant.' }], xml: '' },
+    gptTunned: { ...props.diagram, record: [{ role: 'system', content: 'You are a bpm expert who gives diagrams in json format' }], xml: '' },
+    gemini: { ...props.diagram, record: [{}], xml: '' }
   });
   const [refModalPreview] = useState(React.createRef());
 
@@ -100,104 +98,72 @@ function ModalAssistant(props) {
     setIsRecording(true);
   };
 
-  const assistant = async (description, activities = null) => {
-    if (activities === null) {
-      setRecord([
-        ...record,
-        { role: 'assistant', content: previewDiagrams.gpt.xml }
-      ]);
 
-      await AssistantService.regenerate(
-        description,
-        [
-          ...record,
-          { role: 'assistant', content: previewDiagrams.gpt.xml }
-        ]
-      )
-        .then(response => {
-          setRecord([
-            ...record,
-            { role: 'user', content: response.data.message }
-          ]);
+  const manageResponse = (response, model, history, diagrams, loading, start) => {
+    history = [
+      ...history,
+      { role: 'user', content: response.message },
+      { role: 'assistant', content: response.json }
+    ];
 
-          setPreviewDiagrams({
-            ...previewDiagrams,
-            gpt: {
-              ...previewDiagrams.gpt,
-              xml: response.data.xml
-            }
-          });
-        });
+    setRecord(history);
 
-    } else {
-      const start = Date.now();
-      setIsLoadingGpt(true);
-      setIsLoadingGemini(true);
-      setIsLoadingGptTunned(true);
-      let diagramas = previewDiagrams;
+    diagrams[model].record = [
+      diagrams[model].record[0],
+      { role: 'user', content: response.message },
+      { role: 'assistant', content: response.json }
+    ];
+    diagrams[model].xml = response.xml;
+    setPreviewDiagrams(diagrams);
+    loading[model] = false;
+    setIsLoading(loading);
 
-      AssistantService.gpt(description, activities)
-        .then(response => {
-          /*
-          setRecord([
-            ...record,
-            { role: 'user', content: response.message }
-          ]);
-          */
-
-          diagramas = {
-            ...diagramas,
-            gpt: {
-              ...diagramas.gpt,
-              xml: response.xml
-            }
-          };
-          setPreviewDiagrams(diagramas);
-          console.log(`El asistente GPT se tomó: ${Date.now() - start}`);
-          setIsLoadingGpt(false);
-        });
-
-      AssistantService.gptTunned(description, activities)
-        .then(response => {
-          diagramas = {
-            ...diagramas,
-            gptTunned: {
-              ...diagramas.gptTunned,
-              xml: response.xml
-            }
-          };
-          setPreviewDiagrams(diagramas);
-          console.log(`El asistente GPT-Tunned se tomó: ${Date.now() - start}`);
-          setIsLoadingGptTunned(false);
-        });
-
-      AssistantService.gemini(description, activities)
-        .then(response => {
-          diagramas = {
-            ...diagramas,
-            gemini: {
-              ...diagramas.gemini,
-              xml: response.xml
-            }
-          };
-          setPreviewDiagrams(diagramas);
-          console.log(`El asistente Gemini se tomó: ${Date.now() - start}`);
-          setIsLoadingGemini(false);
-        });
-    }
+    console.log(`El asistente ${model} se tomó: ${Date.now() - start}`);
   }
 
-  const handleSubmit = async (evt) => {
-    evt.preventDefault();
 
-    if (record.length > 1) {
-      await assistant(description)
-    } else {
-      await assistant(description, activities)
-    }
+  const modelCall = (model, description, diagrams, history, loading) => {
+    const start = Date.now();
+
+    AssistantService[model](description)
+      .then(response => manageResponse(response, model, history, diagrams, loading, start));
+  };
+
+
+  const handleSubmit = async (evt) => {
+    let history = record;
+    let diagrams = previewDiagrams;
+    let loading = { gpt: true, gptTunned: false, gemini: false };
+
+    setIsLoading(loading);
+
+    modelCall("gpt", description, diagrams, history, loading);
+    //modelCall("gptTunned", description, diagrams, history, loading);
+    modelCall("gemini", description, diagrams, history, loading);
 
     openModalPreview();
   };
+
+
+  const modelCallModify = (model, description, diagrams, history, loading) => {
+    const start = Date.now();
+
+    AssistantService[model + "Modify"](description, history)
+      .then(response => manageResponse(response, model, history, diagrams, loading, start));
+  };
+
+
+  const handleModify = () => {
+    let history = record;
+    let diagrams = previewDiagrams;
+    let loading = { gpt: true, gptTunned: false, gemini: false };
+
+    setIsLoading(loading);
+
+    modelCallModify("gpt", description, diagrams, history, loading);
+    //modelCallModify("gptTunned", description, diagrams, history, loading);
+    //modelCall("gemini", description, diagrams, history, loading);
+  }
 
   return (
     <div className="modal fade" id="modalDiagram" aria-labelledby="tittleModalDiagram" aria-hidden="true" ref={props.refModalAssistant}>
@@ -209,7 +175,7 @@ function ModalAssistant(props) {
               <i className="bi bi-x-lg"></i>
             </button>
           </div>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={evt => { evt.preventDefault() }}>
             <div className="modal-body">
               <div>
                 <div class="row">
@@ -272,20 +238,20 @@ function ModalAssistant(props) {
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 {
-                  (previewDiagrams.gpt.xml === "" && previewDiagrams.gemini.xml === "")
+                  (previewDiagrams.gpt.xml === "" && previewDiagrams.gptTunned.xml === "" && previewDiagrams.gemini.xml === "")
                     ? <></>
                     : <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
                 }
 
                 {
                   (record.length > 1)
-                    ? <button type="submit" className="btn-one shadow-lg py-1"
-                      disabled={isLoadingGpt}> Modify</button>
-                    : <button type="submit" className="btn-one shadow-lg py-1"
-                      disabled={isLoadingGpt}>Generate</button>
+                    ? <button onClick={handleModify} className="btn-one shadow-lg py-1"
+                      disabled={(isLoading.gpt || isLoading.gptTunned || isLoading.gemini)}> Modify</button>
+                    : <button onClick={handleSubmit} className="btn-one shadow-lg py-1"
+                      disabled={(isLoading.gpt || isLoading.gptTunned || isLoading.gemini)}>Generate</button>
                 }
               </div>
-              {isLoadingGpt ?
+              {(isLoading.gpt || isLoading.gptTunned || isLoading.gemini) ?
                 <div className="clearfix m-4">
                   <div className="spinner-border spinner-border-md float-end" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -296,7 +262,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loadingGpt={isLoadingGpt} loadingGemini={isLoadingGemini} loadingGptTunned={isLoadingGptTunned} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loading={isLoading} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
     </div>
   )
 }
