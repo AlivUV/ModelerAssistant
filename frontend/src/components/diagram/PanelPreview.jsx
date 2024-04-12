@@ -5,6 +5,7 @@ import BpmnModeler from 'bpmn-js/lib/Modeler';
 
 export default function PanelPreview(props) {
     const HIGH_PRIORITY = 1500;
+    // Initialize state variables for the modeler and diagram
     const [modeler, setModeler] = useState();
     const [diagram, setDiagram] = useState({
         name: '',
@@ -13,6 +14,7 @@ export default function PanelPreview(props) {
     });
 
 
+    // Define a run function that import the xml into the bpmnModeler
     const run = useCallback(async (bpmnModeler, xml) => {
         try {
             await bpmnModeler.importXML(xml).then(() => {
@@ -26,12 +28,11 @@ export default function PanelPreview(props) {
         }
     }, [])
 
+    // useEffect hook to save the diagram when the props.opened changes
     useEffect(() => {
-        console.log(props.opened);
-        if (props.opened)
+        if (props.opened) {
             return;
-
-        console.log("Guardar");
+        }
 
         props.setOpened(true);
 
@@ -46,6 +47,7 @@ export default function PanelPreview(props) {
         });
     }, [props.opened])
 
+    // useEffect hook to initialize the modeler when the component mounts
     useEffect(() => {
         if (modeler)
             return;
@@ -60,6 +62,7 @@ export default function PanelPreview(props) {
         }));
     }, [modeler, props])
 
+    // useEffect hook to run the diagram when the diagram or props change
     useEffect(() => {
         if (diagram.xml === "") {
             setDiagram(props.diagrams[props.id]);
@@ -69,6 +72,7 @@ export default function PanelPreview(props) {
         run(modeler, props.diagrams[props.id].xml);
     }, [diagram, props, run, modeler])
 
+    // Return the preview div with the specified height and width
     return (<div id={"preview" + props.id} style={{ height: window.innerHeight * 0.7, width: window.innerWidth }} />);
 
 }

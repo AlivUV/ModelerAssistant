@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useReducer, useState } from 'react';
 import * as AssistantService from "../../service/AssistantService"
 import { Modal } from 'bootstrap';
 
@@ -8,6 +8,59 @@ import { options } from '@bpmn-io/properties-panel/preact';
 // Components
 import ModalPreview from './ModalPreview';
 
+
+const MODELS = {
+  GPT: 'gpt',
+  GPT_TUNNED: 'gptTunned',
+  GEMINI: 'gemini'
+}
+
+
+const INITIAL_MODEL_RECORD = {
+  [MODELS.GPT]: [{ role: 'system', content: 'You are a helpful assistant.' }],
+  [MODELS.GPT_TUNNED]: [{ role: 'system', content: 'You are a bpm expert who gives diagrams in json format' }],
+  [MODELS.GEMINI]: [{}]
+}
+
+
+const LOADER_ACTIONS = {
+  ALL_TRUE: 'ALL_TRUE',
+  UPDATE_TRUE: 'UPDATE_TRUE',
+  UPDATE_FALSE: 'UPDATE_FALSE',
+}
+
+
+const INITIAL_LOADER_STATE = {
+  [MODELS.GPT]: false,
+  [MODELS.GPT_TUNNED]: false,
+  [MODELS.GEMINI]: false
+}
+
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case LOADER_ACTIONS.ALL_TRUE:
+      return {
+        [MODELS.GPT]: true,
+        [MODELS.GPT_TUNNED]: true,
+        [MODELS.GEMINI]: true
+      }
+    case LOADER_ACTIONS.UPDATE_TRUE:
+      return {
+        ...state,
+        [action.payload.name]: true
+      }
+    case LOADER_ACTIONS.UPDATE_FALSE:
+      return {
+        ...state,
+        [action.payload.name]: false
+      }
+    default:
+      return state;
+  }
+}
+
+
 function ModalAssistant(props) {
 
   const [modalOpened, setModalOpened] = useState(true);
@@ -15,37 +68,43 @@ function ModalAssistant(props) {
   const [description, setDescription] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recognition] = useState(new window.webkitSpeechRecognition());
-  const [record, setRecord] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
+  const [record,] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [modalPreview, setModalPreview] = useState();
-  const [isLoading, setIsLoading] = useState({ gpt: false, gptTunned: false, gemini: false });
+  const [loader, loaderDispatch] = useReducer(reducer, INITIAL_LOADER_STATE)
   const [previewDiagrams, setPreviewDiagrams] = useState({
-    gpt: { ...props.diagram, record: [{ role: 'system', content: 'You are a helpful assistant.' }], xml: '' },
-    gptTunned: { ...props.diagram, record: [{ role: 'system', content: 'You are a bpm expert who gives diagrams in json format' }], xml: '' },
-    gemini: { ...props.diagram, record: [{}], xml: '' }
+    [MODELS.GPT]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GPT], xml: '' },
+    [MODELS.GPT_TUNNED]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED], xml: '' },
+    [MODELS.GEMINI]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GEMINI], xml: '' }
   });
   const [refModalPreview] = useState(React.createRef());
+
 
   const addActivity = () => {
     setActivities([...activities, ["", ""]]);
   };
 
+
   const deleteActivity = (position) => {
     setActivities([...activities.filter((_, index) => index !== position)]);
   };
+
 
   const handleChangeActivities = (e, index) => {
     activities[index][0] = e.target.value;
     setActivities([...activities]);
   };
 
+
   const handleChangeResponsibles = (e, index) => {
     activities[index][1] = e.target.value;
     setActivities([...activities]);
   };
 
+
   const handleChangeDescription = (e) => {
     setDescription(e.target.value);
   };
+
 
   const openModalPreview = async () => {
     const modal = new Modal(refModalPreview.current, options);
@@ -53,6 +112,7 @@ function ModalAssistant(props) {
     setModalPreview(modal);
     setModalOpened(true);
   }
+
 
   const closeModals = () => {
     modalPreview.hide();
@@ -98,70 +158,68 @@ function ModalAssistant(props) {
   };
 
 
-  const manageResponse = (response, model, history, diagrams, loading, start) => {
-    history = [
-      ...history,
-      { role: 'user', content: response.message },
-      { role: 'assistant', content: response.json }
-    ];
+  const manageResponse = (response, model, start) => {
+    setPreviewDiagrams(prevDiagrams => {
+      return {
+        ...prevDiagrams,
+        [model]: {
+          ...prevDiagrams[model],
+          xml: response.xml,
+          record: [
+            ...prevDiagrams[model].record,
+            { role: 'user', content: response.message },
+            { role: 'assistant', content: response.json }
+          ]
+        }
+      }
+    });
 
-    setRecord(history);
-
-    diagrams[model].record = [
-      diagrams[model].record[0],
-      { role: 'user', content: response.message },
-      { role: 'assistant', content: response.json }
-    ];
-    diagrams[model].xml = response.xml;
-    setPreviewDiagrams(diagrams);
-    loading[model] = false;
-    setIsLoading(loading);
+    loaderDispatch({ type: LOADER_ACTIONS.UPDATE_FALSE, payload: { name: model } });
 
     console.log(`El asistente ${model} se tomó: ${Date.now() - start}`);
   }
 
 
-  const modelCall = (model, description, diagrams, history, loading) => {
+  const modelCall = (model, description) => {
     const start = Date.now();
 
     AssistantService[model](description)
-      .then(response => manageResponse(response, model, history, diagrams, loading, start));
+      .then(response => manageResponse(response, model, start));
   };
 
 
-  const handleSubmit = async (evt) => {
-    let history = record;
-    let diagrams = previewDiagrams;
-    let loading = { gpt: true, gptTunned: false, gemini: false };
+  const handleSubmit = async () => {
+    setPreviewDiagrams({
+      ...previewDiagrams,
+      [MODELS.GPT]: {
+        ...previewDiagrams[MODELS.GPT],
+        record: INITIAL_MODEL_RECORD[MODELS.GPT]
+      },
+      [MODELS.GPT_TUNNED]: {
+        ...previewDiagrams[MODELS.GPT_TUNNED],
+        record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED]
+      }
+    });
 
-    setIsLoading(loading);
+    loaderDispatch({ type: LOADER_ACTIONS.ALL_TRUE });
+    // TEMPORAL: While gptTunned is not being used.
+    loaderDispatch({ type: LOADER_ACTIONS.UPDATE_FALSE, payload: { name: MODELS.GPT_TUNNED } })
 
-    modelCall("gpt", description, diagrams, history, loading);
-    //modelCall("gptTunned", description, diagrams, history, loading);
-    modelCall("gemini", description, diagrams, history, loading);
+    modelCall(MODELS.GPT, description);
+    //modelCall(MODELS.GPT_TUNNED, description);
+    modelCall(MODELS.GEMINI, description);
 
     openModalPreview();
   };
 
 
-  const modelCallModify = (model, description, diagrams, history, loading) => {
+  const handleModify = model => {
+    loaderDispatch({ type: LOADER_ACTIONS.UPDATE_TRUE, payload: { name: model } });
+
     const start = Date.now();
 
-    AssistantService[model + "Modify"](description, history)
-      .then(response => manageResponse(response, model, history, diagrams, loading, start));
-  };
-
-
-  const handleModify = () => {
-    let history = record;
-    let diagrams = previewDiagrams;
-    let loading = { gpt: true, gptTunned: false, gemini: false };
-
-    setIsLoading(loading);
-
-    modelCallModify("gpt", description, diagrams, history, loading);
-    //modelCallModify("gptTunned", description, diagrams, history, loading);
-    //modelCall("gemini", description, diagrams, history, loading);
+    AssistantService[model + "Modify"](description, previewDiagrams[model].record)
+      .then(response => manageResponse(response, model, start));
   }
 
   return (
@@ -237,7 +295,7 @@ function ModalAssistant(props) {
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 {
-                  (previewDiagrams.gpt.xml === "" && previewDiagrams.gptTunned.xml === "" && previewDiagrams.gemini.xml === "")
+                  (previewDiagrams[MODELS.GPT].xml === "" && previewDiagrams[MODELS.GPT_TUNNED].xml === "" && previewDiagrams[MODELS.GEMINI].xml === "")
                     ? <></>
                     : <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
                 }
@@ -245,12 +303,12 @@ function ModalAssistant(props) {
                 {
                   (record.length > 1)
                     ? <button onClick={handleModify} className="btn-one shadow-lg py-1"
-                      disabled={(isLoading.gpt || isLoading.gptTunned || isLoading.gemini)}> Modify</button>
+                      disabled={(loader[MODELS.GPT] || loader[MODELS.GPT_TUNNED] || loader[MODELS.GEMINI])}> Modify</button>
                     : <button onClick={handleSubmit} className="btn-one shadow-lg py-1"
-                      disabled={(isLoading.gpt || isLoading.gptTunned || isLoading.gemini)}>Generate</button>
+                      disabled={(loader[MODELS.GPT] || loader[MODELS.GPT_TUNNED] || loader[MODELS.GEMINI])}>Generate</button>
                 }
               </div>
-              {(isLoading.gpt || isLoading.gptTunned || isLoading.gemini) ?
+              {(loader[MODELS.GPT] || loader[MODELS.GPT_TUNNED] || loader[MODELS.GEMINI]) ?
                 <div className="clearfix m-4">
                   <div className="spinner-border spinner-border-md float-end" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -261,7 +319,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} loading={isLoading} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} handleModify={handleModify} loader={loader} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
     </div>
   )
 }

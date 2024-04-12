@@ -1,41 +1,64 @@
 import React, { useCallback, useState } from 'react'
+
+// Components
 import PanelPreview from './PanelPreview';
 
-// BPMN
+
 
 function ModalPreview(props) {
-  const [activeTab, setActiveTab] = useState('gpt'); // Estado para gestionar la pestaña activa
-  const [isPanelOpen, setIsPanelOpen] = useState(false); // Estado para controlar la apertura del panel lateral
-  const [textAreaValue, setTextAreaValue] = useState(''); //Estado para el valor del área de texto
+  // Estado para controlar la apertura del panel lateral
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  //Estado para el valor del área de texto
+  const [textAreaValue, setTextAreaValue] = useState('');
+  // Initializing speech recognition object using window.webkitSpeechRecognition
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [isRecording, setIsRecording] = useState(false);
+  // Initializing state variable to store active tab
+  const [activeTab, setActiveTab] = useState('gpt'); // Estado para gestionar la pestaña activa
 
+  /**
+   * Function to handle tab change.
+   * @param {String} tab The name of tab to be changed.
+   * @returns {undefined} No return value.
+   */
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
+
+  /**
+   * Initializing handleClose function to close the modal.
+   * @returns {undefined} No return value.
+   */
   const handleClose = useCallback(() => {
     props.setOpened(false)
   }, [props])
 
+
+  /**
+   * Initializing handleCreate function to create a new diagram.
+   * @returns {undefined} No return value.
+   */
   const handleCreate = () => {
     props.repaint(props.diagrams[activeTab].xml)
     props.closeModals();
   };
 
+
   const handleModifyClick = () => {
     setIsPanelOpen(true);
   };
+
 
   const handleClosePanel = () => {
     setIsPanelOpen(false);
   };
 
-  const handleSend = () => {
-    // Lógica para enviar el texto del área de texto
-    console.log('Texto enviado:', textAreaValue);
-  };
 
+  /**
+   * Initializing startRecording function to start and stop voice recording.
+   * @returns {undefined} No return value.
+   */
   const startRecording = () => {
     if (isRecording) {
       recognition.stop();
@@ -73,6 +96,19 @@ function ModalPreview(props) {
     setIsRecording(true);
   };
 
+
+  /**
+   * Function to send a modification request  to the selected model
+   * @returns {undefined}
+   */
+  const handleModify = () => {
+    setIsPanelOpen(false);
+    props.handleModify(activeTab);
+  }
+  setIsPanelOpen(false);
+
+
+  // Returning JSX content to be rendered
   return (
     <div
       style={{ height: "100", width: "100%" }}
@@ -99,7 +135,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gpt')}
               >
                 <span style={{ marginRight: '5px' }}>GPT-3.5</span>
-                {props.loading.gpt &&
+                {props.loader.gpt &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
@@ -112,7 +148,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gptTunned')}
               >
                 <span style={{ marginRight: '5px' }}>GPT-3.5-Tunned</span>
-                {props.loading.gptTunned &&
+                {props.loader.gptTunned &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
@@ -125,7 +161,7 @@ function ModalPreview(props) {
                 onClick={() => handleTabChange('gemini')}
               >
                 <span style={{ marginRight: '5px' }}>Gemini</span>
-                {props.loading.gemini &&
+                {props.loader.gemini &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
@@ -189,7 +225,7 @@ function ModalPreview(props) {
           <hr className="hr hr-blurry" />  {/*Divider*/}
           <div style={{ textAlign: 'right' }}>
             <button type="button" onClick={handleClosePanel} className="btn-two shadow-lg py-1">Close</button>
-            <button type="button" onClick={handleSend} className="btn-one shadow-lg py-1">Send</button>
+            <button type="button" onClick={handleModify} className="btn-one shadow-lg py-1">Send</button>
           </div>
         </div>
       )}
