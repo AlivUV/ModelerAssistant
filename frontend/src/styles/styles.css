@@ -359,3 +359,31 @@ h5,
 .z-index-1000 {
     z-index: 1000;
 }
+
+.side-panel {
+    position: fixed;
+    top: 50%;
+    /* Centrar verticalmente */
+    right: 0;
+    transform: translateY(-50%);
+    /* Centrar verticalmente */
+    width: auto;
+    /* Ancho automatico */
+
+    background-color: #ffffff;
+    /* Color de fondo del panel */
+    border-left: 1px solid #dee2e6;
+    /* Borde izquierdo */
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    /* Sombra */
+    padding: 20px;
+    /* Espaciado interno */
+}
+
+
+.side-panel textarea {
+    width: calc(100% - 20px);
+    margin: 5px;
+    height: 200px;
+    /* Altura del área de texto */
+}

@@ -101,6 +101,7 @@ async def geminiAux(prompt):
     client = GeminiClient(get_env("Secure_1PSID"), get_env("Secure_1PSIDTS"), proxy=None)
     await client.init(timeout=30, auto_close=False, close_delay=300)
     response = await client.generate_content(prompt)
+    print(response.text)
     return response.text
 
 

@@ -8,11 +8,11 @@ const makePromptGpt = (description) => {
     return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos: 
 
 Participantes del proceso.
-Inicio del proceso (Start Event).
-Tareas de usuario (User Tasks).
-Tareas de servicio (Service Tasks).
-Puertas de enlace Exclusivas (Exclusive Gateways).
-Fin del proceso (End Event).
+Inicio del proceso(startevent, timerstart, messagestart, conditionalstart, signalstart).
+Tareas(task, Usertask,manualtask,servicetask,messagecatchtask,messagethrowtask,businessruletask,scripttask).
+eventos intermedios(intermediateevent,timerintermediate,messagecatchintermediate,messagethrowintermediate,escalationintermediate,conditionalintermediate,compensationintermediate,linkcatchintermediate,linkthrowintermediate,signalcatchintermediate,signalthrowintermediate).
+Puertas de enlace(ExclusiveGateway, inclusivegateway,parallelgateway,eventbasedgateway,complexgateway).
+Fin del proceso (endevent, messageend, errorend, escalationend, signalend, compensationend, terminateend ).
 
 Asegúrate de incluir para cada una de las tareas el nombre de la tarea y el participante al que está asociado, además de indicar cómo estos elementos están conectados mediante flujos de secuencia (Sequence Flows), ten en cuenta el orden de los elementos en el diagrama y quiero que los componentes del JSON sigan el siguiente orden: Process -> participants -> elements -> flows y quiero que incluyas todos los gateways que consideres necesarios dentro de la misma lista de los elements.
 Quiero que tu respuesta siga este mismo formato conservando su estructura:

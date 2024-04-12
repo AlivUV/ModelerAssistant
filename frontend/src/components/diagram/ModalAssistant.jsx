@@ -60,7 +60,6 @@ function ModalAssistant(props) {
   };
 
 
-
   const startRecording = () => {
     if (isRecording) {
       recognition.stop();
