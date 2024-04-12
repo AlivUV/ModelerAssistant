@@ -105,7 +105,6 @@ function ModalPreview(props) {
     setIsPanelOpen(false);
     props.handleModify(activeTab);
   }
-  setIsPanelOpen(false);
 
 
   // Returning JSX content to be rendered
