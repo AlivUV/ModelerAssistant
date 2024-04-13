@@ -103,7 +103,7 @@ function ModalPreview(props) {
    */
   const handleModify = () => {
     setIsPanelOpen(false);
-    props.handleModify(activeTab);
+    props.handleModify(activeTab, textAreaValue);
   }
 
 

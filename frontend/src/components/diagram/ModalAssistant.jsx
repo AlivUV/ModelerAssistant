@@ -213,12 +213,12 @@ function ModalAssistant(props) {
   };
 
 
-  const handleModify = model => {
+  const handleModify = (model, modifyDescription) => {
     loaderDispatch({ type: LOADER_ACTIONS.UPDATE_TRUE, payload: { name: model } });
 
     const start = Date.now();
 
-    AssistantService[model + "Modify"](description, previewDiagrams[model].record)
+    AssistantService[model + "Modify"](modifyDescription, previewDiagrams[model].record)
       .then(response => manageResponse(response, model, start));
   }
 
