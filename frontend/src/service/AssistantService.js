@@ -104,7 +104,9 @@ export const gptTunned = async (description) => {
 
 export const gemini = async (description) => {
     const body = JSON.stringify({
-        prompt: makePromptGemini(description)
+        messages: [
+            { role: 'user', parts: makePromptGemini(description) }
+        ]
     })
     return await fetcher("gemini", body)
 }
@@ -131,15 +133,11 @@ export const gptTunnedModify = async (description, record) => {
 }
 
 export const geminiModify = async (description, record) => {
-    return record.pop().content;
-    /*
-        const body = JSON.stringify({
-            messages: [
-                ...record,
-                { role: 'user', content: 'Al código json que generaste ' + description }
-            ]
-        })
-        console.log(record);
-        return await fetcher("gpt/tunned", body)
-    */
+    const body = JSON.stringify({
+        messages: [
+            ...record,
+            { role: 'user', parts: 'Al código json que generaste ' + description }
+        ]
+    })
+    return await fetcher("gemini", body)
 }

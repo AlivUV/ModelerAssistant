@@ -176,21 +176,21 @@ function ModalPreview(props) {
               className={`tab-pane fade ${activeTab === 'gpt' ? 'show active' : ''}`}
             >
               {/* Content for Tab 1 */}
-              <PanelPreview id={'gpt'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
+              <PanelPreview id={'gpt'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
             </div>
             <div
               className={`tab-pane fade ${activeTab === 'gptTunned' ? 'show active' : ''}`}
             >
               {/* Content for Tab 3 */}
               {/* Add content for Tab 3 */}
-              <PanelPreview id={'gptTunned'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
+              <PanelPreview id={'gptTunned'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
             </div>
             <div
               className={`tab-pane fade ${activeTab === 'gemini' ? 'show active' : ''}`}
             >
               {/* Content for Tab 2 */}
               {/* Add content for Tab 2 */}
-              <PanelPreview id={'gemini'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} setDiagrams={props.setDiagrams} />
+              <PanelPreview id={'gemini'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
             </div>
             {/* Add more tab content as needed */}
           </div>

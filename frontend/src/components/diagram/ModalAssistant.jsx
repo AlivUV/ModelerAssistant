@@ -19,7 +19,7 @@ const MODELS = {
 const INITIAL_MODEL_RECORD = {
   [MODELS.GPT]: [{ role: 'system', content: 'You are a helpful assistant.' }],
   [MODELS.GPT_TUNNED]: [{ role: 'system', content: 'You are a bpm expert who gives diagrams in json format' }],
-  [MODELS.GEMINI]: [{}]
+  [MODELS.GEMINI]: []
 }
 
 
@@ -37,7 +37,7 @@ const INITIAL_LOADER_STATE = {
 }
 
 
-const reducer = (state, action) => {
+const loaderReducer = (state, action) => {
   switch (action.type) {
     case LOADER_ACTIONS.ALL_TRUE:
       return {
@@ -61,6 +61,108 @@ const reducer = (state, action) => {
 }
 
 
+const DIAGRAMS_ACTIONS = {
+  RESET_ALL_DIAGRAMS: 'RESET_ALL_DIAGRAMS',
+  [`UPDATE_${MODELS.GPT}`]: `UPDATE_${MODELS.GPT}`,
+  [`UPDATE_${MODELS.GPT_TUNNED}`]: `UPDATE_${MODELS.GPT_TUNNED}`,
+  [`UPDATE_${MODELS.GEMINI}`]: `UPDATE_${MODELS.GEMINI}`,
+  [`UPDATE_XML_${MODELS.GPT}`]: `UPDATE_XML_${MODELS.GPT}`,
+  [`UPDATE_XML_${MODELS.GPT_TUNNED}`]: `UPDATE_XML_${MODELS.GPT_TUNNED}`,
+  [`UPDATE_XML_${MODELS.GEMINI}`]: `UPDATE_XML_${MODELS.GEMINI}`
+}
+
+
+const diagramsReducer = (state, action) => {
+  switch (action.type) {
+    case DIAGRAMS_ACTIONS.RESET_ALL_DIAGRAMS:
+      console.log("Reset all");
+      return {
+        ...state,
+        [MODELS.GPT]: {
+          ...state[MODELS.GPT],
+          xml: "",
+          record: INITIAL_MODEL_RECORD[MODELS.GPT]
+        },
+        [MODELS.GPT_TUNNED]: {
+          ...state[MODELS.GPT_TUNNED],
+          xml: "",
+          record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED]
+        },
+        [MODELS.GEMINI]: {
+          ...state[MODELS.GEMINI],
+          xml: "",
+          record: INITIAL_MODEL_RECORD[MODELS.GEMINI]
+        }
+      }
+    case DIAGRAMS_ACTIONS[`UPDATE_${MODELS.GPT}`]:
+      return {
+        ...state,
+        [MODELS.GPT]: {
+          ...state[MODELS.GPT],
+          xml: action.payload.xml,
+          record: [
+            ...state[MODELS.GPT].record,
+            { role: 'user', content: action.payload.prompt },
+            { role: 'assistant', content: action.payload.response }
+          ]
+        }
+      }
+    case DIAGRAMS_ACTIONS[`UPDATE_${MODELS.GPT_TUNNED}`]:
+      return {
+        ...state,
+        [MODELS.GPT_TUNNED]: {
+          ...state[MODELS.GPT_TUNNED],
+          xml: action.payload.xml,
+          record: [
+            ...state[MODELS.GPT_TUNNED].record,
+            { role: 'user', content: action.payload.prompt },
+            { role: 'assistant', content: action.payload.response }
+          ]
+        }
+      }
+    case DIAGRAMS_ACTIONS[`UPDATE_${MODELS.GEMINI}`]:
+      return {
+        ...state,
+        [MODELS.GEMINI]: {
+          ...state[MODELS.GEMINI],
+          xml: action.payload.xml,
+          record: [
+            ...state[MODELS.GEMINI].record,
+            { role: 'user', parts: action.payload.prompt },
+            { role: 'model', parts: action.payload.response }
+          ]
+        }
+      }
+    case DIAGRAMS_ACTIONS[`UPDATE_XML_${MODELS.GPT}`]:
+      return {
+        ...state,
+        [MODELS.GPT]: {
+          ...state[MODELS.GPT],
+          xml: action.payload.xml
+        }
+      }
+    case DIAGRAMS_ACTIONS[`UPDATE_XML_${MODELS.GPT_TUNNED}`]:
+      return {
+        ...state,
+        [MODELS.GPT_TUNNED]: {
+          ...state[MODELS.GPT_TUNNED],
+          xml: action.payload.xml
+        }
+      }
+    case DIAGRAMS_ACTIONS[`UPDATE_XML_${MODELS.GEMINI}`]:
+      return {
+        ...state,
+        [MODELS.GEMINI]: {
+          ...state[MODELS.GEMINI],
+          xml: action.payload.xml
+        }
+      }
+    default:
+      return state;
+  }
+}
+
+
 function ModalAssistant(props) {
 
   const [modalOpened, setModalOpened] = useState(true);
@@ -70,12 +172,13 @@ function ModalAssistant(props) {
   const [recognition] = useState(new window.webkitSpeechRecognition());
   const [record,] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [modalPreview, setModalPreview] = useState();
-  const [loader, loaderDispatch] = useReducer(reducer, INITIAL_LOADER_STATE)
-  const [previewDiagrams, setPreviewDiagrams] = useState({
+  const [loader, loaderDispatch] = useReducer(loaderReducer, INITIAL_LOADER_STATE)
+  const [diagrams, diagramsDispatch] = useReducer(diagramsReducer, {
     [MODELS.GPT]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GPT], xml: '' },
     [MODELS.GPT_TUNNED]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED], xml: '' },
     [MODELS.GEMINI]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GEMINI], xml: '' }
-  });
+  }
+  )
   const [refModalPreview] = useState(React.createRef());
 
 
@@ -159,22 +262,11 @@ function ModalAssistant(props) {
 
 
   const manageResponse = (response, model, start) => {
-    setPreviewDiagrams(prevDiagrams => {
-      return {
-        ...prevDiagrams,
-        [model]: {
-          ...prevDiagrams[model],
-          xml: response.xml,
-          record: [
-            ...prevDiagrams[model].record,
-            { role: 'user', content: response.message },
-            { role: 'assistant', content: response.json }
-          ]
-        }
-      }
-    });
+    diagramsDispatch({ type: DIAGRAMS_ACTIONS[`UPDATE_${model}`], payload: { prompt: response.message, response: response.json, xml: response.xml } })
 
     loaderDispatch({ type: LOADER_ACTIONS.UPDATE_FALSE, payload: { name: model } });
+
+    console.log(diagrams);
 
     console.log(`El asistente ${model} se tomó: ${Date.now() - start}`);
   }
@@ -189,17 +281,7 @@ function ModalAssistant(props) {
 
 
   const handleSubmit = async () => {
-    setPreviewDiagrams({
-      ...previewDiagrams,
-      [MODELS.GPT]: {
-        ...previewDiagrams[MODELS.GPT],
-        record: INITIAL_MODEL_RECORD[MODELS.GPT]
-      },
-      [MODELS.GPT_TUNNED]: {
-        ...previewDiagrams[MODELS.GPT_TUNNED],
-        record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED]
-      }
-    });
+    diagramsDispatch({ type: DIAGRAMS_ACTIONS.RESET_ALL_DIAGRAMS })
 
     loaderDispatch({ type: LOADER_ACTIONS.ALL_TRUE });
     // TEMPORAL: While gptTunned is not being used.
@@ -218,7 +300,7 @@ function ModalAssistant(props) {
 
     const start = Date.now();
 
-    AssistantService[model + "Modify"](modifyDescription, previewDiagrams[model].record)
+    AssistantService[model + "Modify"](modifyDescription, diagrams[model].record)
       .then(response => manageResponse(response, model, start));
   }
 
@@ -295,7 +377,7 @@ function ModalAssistant(props) {
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 {
-                  (previewDiagrams[MODELS.GPT].xml === "" && previewDiagrams[MODELS.GPT_TUNNED].xml === "" && previewDiagrams[MODELS.GEMINI].xml === "")
+                  (diagrams[MODELS.GPT].xml === "" && diagrams[MODELS.GPT_TUNNED].xml === "" && diagrams[MODELS.GEMINI].xml === "")
                     ? <></>
                     : <button type="button" className="btn-two shadow-lg py-1" onClick={openModalPreview}>Preview</button>
                 }
@@ -319,7 +401,7 @@ function ModalAssistant(props) {
           </form>
         </div>
       </div>
-      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={previewDiagrams} setDiagrams={setPreviewDiagrams} handleModify={handleModify} loader={loader} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
+      <ModalPreview refModalPreview={refModalPreview} opened={modalOpened} setOpened={setModalOpened} diagrams={diagrams} diagramsDispatch={diagramsDispatch} handleModify={handleModify} loader={loader} repaint={props.repaint} modalPreview={modalPreview} closeModals={closeModals}></ModalPreview>
     </div>
   )
 }

@@ -37,10 +37,9 @@ export default function PanelPreview(props) {
         props.setOpened(true);
 
         modeler.saveXML({ format: true }).then(data => {
-            props.setDiagrams({
-                ...props.diagrams,
-                [props.id]: {
-                    ...props.diagrams[props.id],
+            props.diagramsDispatcher({
+                type: `UPDATE_XML_${props.id}`,
+                payload: {
                     xml: data.xml
                 }
             });

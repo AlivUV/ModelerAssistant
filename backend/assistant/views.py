@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view
 from django.core.exceptions import ImproperlyConfigured
 import asyncio
 from gemini_webapi import GeminiClient
+import google.generativeai as genai
 
 env = environ.Env()
 
@@ -95,6 +96,23 @@ def gptTunned(request):
     }
     return Response(data, status = status.HTTP_200_OK)
 
+
+@api_view(['POST'])
+def geminiPro(request):
+    body = json.loads(request.body.decode('utf-8'))
+
+    genai.configure(api_key = get_env("GEMINI_API_KEY"))
+
+    model = genai.GenerativeModel('gemini-pro')
+
+    response = model.generate_content(body['messages'])
+    data = {
+        'data': {
+            'message': body['messages'][-1]['parts'],
+            'xml': response.text.split('```')[1][5:]
+        }
+    }
+    return Response(data, status = status.HTTP_200_OK)
 
 
 async def geminiAux(prompt):
