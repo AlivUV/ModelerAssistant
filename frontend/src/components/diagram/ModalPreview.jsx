@@ -171,6 +171,11 @@ function ModalPreview(props) {
       {isPanelOpen && (
         <div className="side-panel">
           <div>
+            <div className="modal-content bg-two border-0">
+              <div className="modal-header bg-one">
+                <h5 className="modal-title text-white" id="tittleModalDiagram"> Modification of {activeTab}</h5>
+              </div>
+            </div>
             <div class="row">
               <div className='col-8' >
                 <div className="mb-2 mt-2">
