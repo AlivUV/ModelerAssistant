@@ -50,12 +50,15 @@ def gpt(request):
 
     if (completion.choices[0].message.content[0] != '{'):
         print('Split')
-        completion.choices[0].message.content = completion.choices[0].message.content.split('```')[1][5:]
+        xml = completion.choices[0].message.content.split('```')[1][5:]
+    else:
+        xml = completion.choices[0].message.content
 
     data = {
         'data': {
             'message': body['messages'][-1]['content'],
-            'xml': completion.choices[0].message.content
+            'xml': xml,
+            'response': completion.choices[0].message.content
         }
     }
     return Response(data, status = status.HTTP_200_OK)
@@ -106,10 +109,18 @@ def geminiPro(request):
     model = genai.GenerativeModel('gemini-pro')
 
     response = model.generate_content(body['messages'])
+
+    xml = response.text.split('```')[1]
+
+    if (xml[0] != '{' and xml[0] != '\n'):
+        print("json cut")
+        xml = xml[5:]
+
     data = {
         'data': {
             'message': body['messages'][-1]['parts'],
-            'xml': response.text.split('```')[1][5:]
+            'xml': xml,
+            'response': response.text
         }
     }
     return Response(data, status = status.HTTP_200_OK)
