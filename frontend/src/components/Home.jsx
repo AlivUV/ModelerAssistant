@@ -1,12 +1,11 @@
 import NavBar from "./NavBar";
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Components
 import Footer from "./Footer";
 
 function Home() {
-    const [date] = useState(new Date())
 
     const setSizeCardsTech = () => {
         var width = 324 * window.innerWidth / 1879

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { calculateDiagramMicroservices, getDiagram as getInfoDiagram, updateDiagram } from '../../service/DiagramService';
 import { addRules } from '../../service/AprioriService';
 import { Toast, Modal } from 'bootstrap';
 import * as ProjectService from "../../service/ProjectService";
-import * as AssistantService from "../../service/AssistantService"
 
 // BPMN
 import BpmnModeler from 'bpmn-js/lib/Modeler';
@@ -22,7 +21,6 @@ import ModalUserStories from './ModalUserStories';
 import ModalAssistant from './ModalAssistant';
 import ModalPdf from '../pdfbacklog/ModalPdf';
 import { MICROSERVICE_VIEWER_URL } from "../../utils";
-import config from "bootstrap/js/src/util/config";
 
 
 function ModelerComponent() {
@@ -56,9 +54,14 @@ function ModelerComponent() {
     xml: '',
   });
 
-  async function run(bpmnModeler, xml) {
+  const repaint = (xml) => {
+    console.log(xml)
+    run(instanceModeler, xml)
+  }
+
+  function run(bpmnModeler, xml) {
     try {
-      await bpmnModeler.importXML(xml).then(() => {
+      bpmnModeler.importXML(xml).then(() => {
         bpmnModeler.on('element.contextmenu', HIGH_PRIORITY, (e) => {
           e.originalEvent.preventDefault();
           e.originalEvent.stopPropagation();
@@ -258,7 +261,7 @@ function ModelerComponent() {
     arrElements.forEach(element => {
       newRules = createAssociationRule(element, element, newRules)
     })
-    const res = await addRules(newRules)
+    await addRules(newRules)
   }
 
   const createAssociationRule = (element, elementSource, rules) => {
@@ -427,8 +430,8 @@ function ModelerComponent() {
     if (isValid) {
       try {
         // Update Diagram
-        const data = await modeler.saveXML({ format: true });
-        const resultSvg = await modeler.saveSVG({ format: true });
+        //const data = await modeler.saveXML({ format: true });
+        //const resultSvg = await modeler.saveSVG({ format: true });
         const formData = {
           json_user_histories: jsonCreate(modeler),
         }
@@ -558,13 +561,6 @@ function ModelerComponent() {
     getData();
   }, [])
 
-  const redraw = async (modeler) => {
-    const response = await AssistantService.autocomplete();
-
-    setDiagram({ name: "Prueba", description: "", xml: response.data.xml })
-    run(modeler, response.data.xml)
-  }
-
   return (
     <div className='bg-two'>
       <NavBar />
@@ -594,9 +590,9 @@ function ModelerComponent() {
             </button>
             {/* Button Save */}
             <button id="save_diagram" className="btn-one py-2"
-              onClick={() => {
-                console.log(instanceModeler._moddle);
-                return; save(instanceModeler)
+              onClick={async () => {
+                console.log(await instanceModeler.saveXML({ format: true }));
+                return; //save(instanceModeler)
               }}
               disabled={!loadSave}>
               {
@@ -626,7 +622,7 @@ function ModelerComponent() {
       <ModalPdf jsonCreate={jsonCreate} modeler={instanceModeler} modalPdf={modalPdf} refModalPdf={refModalPdf}></ModalPdf>
       <ModalUserStories jsonCreate={jsonCreate} modeler={instanceModeler} modalUserStories={modalUserStories} refModalUserStories={refModalUserStories} openModalPdf={openModalPdf} loadCreateUserStories={loadCreateUserStories}></ModalUserStories>
       <Alert type={alertType} message={alertMessage} refAlertElement={refAlertElement} />
-      <ModalAssistant refModalAssistant={refModalAssistant} ></ModalAssistant>
+      <ModalAssistant refModalAssistant={refModalAssistant} repaint={repaint} modalAssistant={modalAssistant}></ModalAssistant>
     </div>
   )
 }
