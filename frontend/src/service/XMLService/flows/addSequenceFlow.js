@@ -12,7 +12,7 @@ import { yPad } from "../utils";
  * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
  */
 const addSequenceFlow = (sourceTask, targetTask, participantId, bpmn) => {
-    const flowId = bpmn.flows + 1;
+    const flowId = (bpmn.seqFlows += 1) + bpmn.msgFlows;
     let xml;
     let dir;
 
@@ -74,7 +74,6 @@ const addSequenceFlow = (sourceTask, targetTask, participantId, bpmn) => {
     }
 
     bpmn.xml = xml.join("</bpmn:process>");
-    bpmn.flows += 1;
     return bpmn;
 }
 

@@ -111,8 +111,8 @@ const fetcher = async (model, body) => {
         body: body
     })
         .then(response => response.json())
-        .then(({ data }) => (console.log(model), console.log(data), { message: data.message, modelResponse: "```json\n" + data.xml + "```", json: JSON.parse(data.xml) }))
-        .then(({ message, modelResponse, json }) => ({ message: message, json: modelResponse, xml: buildBPMN(json) }));
+        .then(({ data }) => ({ message: data.message, modelResponse: "```json\n" + data.xml + "```", json: JSON.parse(data.xml) }))
+        .then(({ message, modelResponse, json }) => ({ ...buildBPMN(json), message: message, json: modelResponse }));
 }
 
 

@@ -11,7 +11,7 @@ import { yPad } from "../utils";
  * @returns {{startEvts: Number, endEvts: Number, tasks: Number, flows: Number, gateways: Number, participants: Array, xml: String}}
  */
 const addMessageFlow = (sourceTask, targetTask, bpmn) => {
-    const id = bpmn.flows + 1;
+    const id = bpmn.seqFlows + (bpmn.msgFlows += 1);
     let xml;
 
     //Add definitions.
@@ -40,7 +40,6 @@ const addMessageFlow = (sourceTask, targetTask, bpmn) => {
         xml[1][0] += flowDiagram;
         xml[1] = xml[1].join("</bpmndi:BPMNPlane>");
     }
-    bpmn.flows += 1;
     bpmn.xml = xml.join("</bpmn:collaboration>");
     return bpmn;
 }

@@ -13,7 +13,8 @@ const initBPMN = () => {
         interEvts: 0,
         endEvts: 0,
         tasks: 0,
-        flows: 0,
+        seqFlows: 0,
+        msgFlows: 0,
         gateways: 0,
         participants: [],
         xml: `
@@ -89,7 +90,23 @@ const buildBPMN = jsonBPMN => {
         }
     });
 
-    return bpmn.xml;
+    return {
+        xml: bpmn.xml,
+        startEvents: bpmn.startEvts,
+        intermediateEvents: bpmn.interEvts,
+        endEvents: bpmn.endEvts,
+        tasks: bpmn.tasks,
+        totalEvents: (bpmn.startEvts + bpmn.interEvts + bpmn.endEvts),
+        gateways: bpmn.gateways,
+        actConectivity: (bpmn.tasks / bpmn.seqFlows),
+        partConectivity: (bpmn.msgFlows / bpmn.participants.length),
+        PLT: (bpmn.participants.length / bpmn.tasks),
+        collapsedSubProcess: 0,
+        dataObjects: 0,
+        PDOPIn: 0,
+        PDOPOut: 0,
+        PDOTOut: 0,
+    };
 }
 
 export { buildBPMN };

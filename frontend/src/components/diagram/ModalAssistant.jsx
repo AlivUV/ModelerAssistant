@@ -173,12 +173,13 @@ function ModalAssistant(props) {
   const [record,] = useState([{ role: 'system', content: 'You are a helpful assistant.' }]);
   const [modalPreview, setModalPreview] = useState();
   const [loader, loaderDispatch] = useReducer(loaderReducer, INITIAL_LOADER_STATE)
-  const [diagrams, diagramsDispatch] = useReducer(diagramsReducer, {
-    [MODELS.GPT]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GPT], xml: '' },
-    [MODELS.GPT_TUNNED]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED], xml: '' },
-    [MODELS.GEMINI]: { ...props.diagram, record: INITIAL_MODEL_RECORD[MODELS.GEMINI], xml: '' }
-  }
-  )
+  const [diagrams, diagramsDispatch] = useReducer(diagramsReducer, (() => {
+    const newDiagrams = {};
+    Object.entries(MODELS).forEach(([, model]) => (
+      newDiagrams[model] = { ...props.diagram, record: INITIAL_MODEL_RECORD[model], xml: '' }
+    ));
+    return newDiagrams;
+  })())
   const [refModalPreview] = useState(React.createRef());
 
 
@@ -266,7 +267,7 @@ function ModalAssistant(props) {
 
     loaderDispatch({ type: LOADER_ACTIONS.UPDATE_FALSE, payload: { name: model } });
 
-    console.log(diagrams);
+    console.log(response);
 
     console.log(`El asistente ${model} se tomó: ${Date.now() - start}`);
   }
