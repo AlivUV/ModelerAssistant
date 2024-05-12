@@ -112,7 +112,8 @@ const fetcher = async (model, body) => {
     })
         .then(response => response.json())
         .then(({ data }) => ({ message: data.message, modelResponse: "```json\n" + data.xml + "```", json: JSON.parse(data.xml) }))
-        .then(({ message, modelResponse, json }) => ({ ...buildBPMN(json), message: message, json: modelResponse }));
+        .then(({ message, modelResponse, json }) => ({ ...buildBPMN(json), message: message, json: modelResponse }))
+        .catch(error => ({ error: error }));
 }
 
 

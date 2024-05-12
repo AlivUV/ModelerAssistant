@@ -263,7 +263,12 @@ function ModalAssistant(props) {
 
 
   const manageResponse = (response, model, start) => {
-    diagramsDispatch({ type: DIAGRAMS_ACTIONS[`UPDATE_${model}`], payload: { prompt: response.message, response: response.json, xml: response.xml } })
+    if (response.error) {
+      console.error('Error:', response.error);
+    }
+    else {
+      diagramsDispatch({ type: DIAGRAMS_ACTIONS[`UPDATE_${model}`], payload: { prompt: response.message, response: response.json, xml: response.xml } })
+    }
 
     loaderDispatch({ type: LOADER_ACTIONS.UPDATE_FALSE, payload: { name: model } });
 
