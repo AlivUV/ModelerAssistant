@@ -38,7 +38,8 @@ export default function PanelPreview(props) {
 
         modeler.saveXML({ format: true }).then(data => {
             props.diagramsDispatch({
-                type: `UPDATE_XML_${props.id}`,
+                type: `UPDATE_MODEL_XML`,
+                model: props.id,
                 payload: {
                     xml: data.xml
                 }
@@ -64,6 +65,7 @@ export default function PanelPreview(props) {
     // useEffect hook to run the diagram when the diagram or props change
     useEffect(() => {
         if (diagram.xml === "") {
+            console.log(props.diagrams)
             setDiagram(props.diagrams[props.id]);
             return
         }

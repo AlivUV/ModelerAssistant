@@ -1,14 +1,14 @@
 import os
 import json
+import asyncio
 import environ
 from openai import OpenAI
 from rest_framework import status
+import google.generativeai as genai
+from gemini_webapi import GeminiClient
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.core.exceptions import ImproperlyConfigured
-import asyncio
-from gemini_webapi import GeminiClient
-import google.generativeai as genai
 
 env = environ.Env()
 
@@ -31,22 +31,10 @@ def gpt(request):
 
     openai = OpenAI(api_key=get_env("OPENAI_API_KEY"))
 
-    print('=================================')
-    print('=================================')
-    print('=================================')
-    print('=================================')
-
-    print('gpt in progress')
-
     completion = openai.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=body['messages']
     )
-
-    print('=================================')
-    print('=================================')
-    print('=================================')
-    print('=================================')
 
     if (completion.choices[0].message.content[0] != '{'):
         print('Split')
@@ -56,6 +44,11 @@ def gpt(request):
 
     data = {
         'data': {
+            'usage': {
+                'total': completion.usage.total_tokens,
+                'prompt': completion.usage.prompt_tokens,
+                'completion': completion.usage.completion_tokens
+            },
             'message': body['messages'][-1]['content'],
             'xml': xml,
             'response': completion.choices[0].message.content
@@ -66,26 +59,20 @@ def gpt(request):
 
 @api_view(['POST'])
 def gptTunned(request):
+    """Función para realizar peticiones al modelo de lenguaje gpt-3.5 afinado.
+    ---
+    post: Función para realizar peticiones al modelo de lenguaje gpt-3.5 afinado.
+    responses:
+        200: El modelo respondió exitosamente.
+    """
     body = json.loads(request.body.decode('utf-8'))
 
-    openai = OpenAI(api_key=get_env("OPENAI_API_KEY_PREMIUM"))
-
-    print('=================================')
-    print('=================================')
-    print('=================================')
-    print('=================================')
-
-    print('gpt-tunned in progress')
+    openai = OpenAI(api_key=get_env("OPENAI_API_KEY"))
 
     completion = openai.chat.completions.create(
         model="ft:gpt-3.5-turbo-0125:personal::9A7kZudv",
         messages=body['messages']
     )
-
-    print('=================================')
-    print('=================================')
-    print('=================================')
-    print('=================================')
 
     if (completion.choices[0].message.content[0] != '{'):
         print('Split')
@@ -93,6 +80,11 @@ def gptTunned(request):
 
     data = {
         'data': {
+            'usage': {
+                'total': completion.usage.total_tokens,
+                'prompt': completion.usage.prompt_tokens,
+                'completion': completion.usage.completion_tokens
+            },
             'message': body['messages'][-1]['content'],
             'xml': completion.choices[0].message.content
         }
@@ -110,14 +102,23 @@ def geminiPro(request):
 
     response = model.generate_content(body['messages'])
 
-    xml = response.text.split('```')[1]
+    xml = response.text.split('```')
+
+    if (len(xml) > 1) :
+        xml = xml[1]
+    else:
+        xml = response.text
 
     if (xml[0] != '{' and xml[0] != '\n'):
-        print("json cut")
         xml = xml[5:]
 
     data = {
         'data': {
+            'usage': {
+                'total': len(body['messages'][-1]['parts']) + len(response.text),
+                'prompt': len(body['messages'][-1]['parts']),
+                'completion': len(response.text)
+            },
             'message': body['messages'][-1]['parts'],
             'xml': xml,
             'response': response.text

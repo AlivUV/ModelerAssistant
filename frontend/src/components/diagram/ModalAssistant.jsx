@@ -75,21 +75,17 @@ const DIAGRAMS_ACTIONS = {
 const diagramsReducer = (state, action) => {
   switch (action.type) {
     case DIAGRAMS_ACTIONS.RESET_ALL_DIAGRAMS:
-      console.log("Reset all");
       return {
         ...state,
         [MODELS.GPT]: {
-          ...state[MODELS.GPT],
           xml: "",
           record: INITIAL_MODEL_RECORD[MODELS.GPT]
         },
         [MODELS.GPT_TUNNED]: {
-          ...state[MODELS.GPT_TUNNED],
           xml: "",
           record: INITIAL_MODEL_RECORD[MODELS.GPT_TUNNED]
         },
         [MODELS.GEMINI]: {
-          ...state[MODELS.GEMINI],
           xml: "",
           record: INITIAL_MODEL_RECORD[MODELS.GEMINI]
         }
@@ -99,9 +95,9 @@ const diagramsReducer = (state, action) => {
         ...state,
         [MODELS.GPT]: {
           ...state[MODELS.GPT],
-          xml: action.payload.xml,
+          ...action.payload.responseData,
           record: [
-            ...state[MODELS.GPT].record,
+            ...state[MODELS.GPT]?.record || [],
             { role: 'user', content: action.payload.prompt },
             { role: 'assistant', content: action.payload.response }
           ]
@@ -112,9 +108,9 @@ const diagramsReducer = (state, action) => {
         ...state,
         [MODELS.GPT_TUNNED]: {
           ...state[MODELS.GPT_TUNNED],
-          xml: action.payload.xml,
+          ...action.payload.responseData,
           record: [
-            ...state[MODELS.GPT_TUNNED].record,
+            ...state[MODELS.GPT_TUNNED]?.record || [],
             { role: 'user', content: action.payload.prompt },
             { role: 'assistant', content: action.payload.response }
           ]
@@ -125,35 +121,19 @@ const diagramsReducer = (state, action) => {
         ...state,
         [MODELS.GEMINI]: {
           ...state[MODELS.GEMINI],
-          xml: action.payload.xml,
+          ...action.payload.responseData,
           record: [
-            ...state[MODELS.GEMINI].record,
+            ...state[MODELS.GEMINI]?.record || [],
             { role: 'user', parts: action.payload.prompt },
             { role: 'model', parts: action.payload.response }
           ]
         }
       }
-    case DIAGRAMS_ACTIONS[`UPDATE_XML_${MODELS.GPT}`]:
+    case DIAGRAMS_ACTIONS[`UPDATE_MODEL_XML`]:
       return {
         ...state,
-        [MODELS.GPT]: {
-          ...state[MODELS.GPT],
-          xml: action.payload.xml
-        }
-      }
-    case DIAGRAMS_ACTIONS[`UPDATE_XML_${MODELS.GPT_TUNNED}`]:
-      return {
-        ...state,
-        [MODELS.GPT_TUNNED]: {
-          ...state[MODELS.GPT_TUNNED],
-          xml: action.payload.xml
-        }
-      }
-    case DIAGRAMS_ACTIONS[`UPDATE_XML_${MODELS.GEMINI}`]:
-      return {
-        ...state,
-        [MODELS.GEMINI]: {
-          ...state[MODELS.GEMINI],
+        [action.model]: {
+          ...state[action.model],
           xml: action.payload.xml
         }
       }
@@ -267,12 +247,10 @@ function ModalAssistant(props) {
       console.error('Error:', response.error);
     }
     else {
-      diagramsDispatch({ type: DIAGRAMS_ACTIONS[`UPDATE_${model}`], payload: { prompt: response.message, response: response.json, xml: response.xml } })
+      diagramsDispatch({ type: DIAGRAMS_ACTIONS[`UPDATE_${model}`], payload: response })
     }
 
     loaderDispatch({ type: LOADER_ACTIONS.UPDATE_FALSE, payload: { name: model } });
-
-    console.log(response);
 
     console.log(`El asistente ${model} se tomó: ${Date.now() - start}`);
   }
