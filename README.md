@@ -36,6 +36,8 @@ DATABASE_USER="postgres"
 DATABASE_PASSWORD="postgres"
 DATABASE_HOST="localhost"
 DATABASE_PORT="5432"
+OPENAI_API_KEY="Secret_OpenAI_Api_Key"
+GEMINI_API_KEY="Secret_Gemini_Api_Key"
 ```
 
 2. Install dependencies
