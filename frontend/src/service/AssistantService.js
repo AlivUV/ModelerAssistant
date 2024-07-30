@@ -4,63 +4,62 @@ import {
 
 import { buildBPMN } from './XMLService'
 
-const makePromptGpt = (description) => {
-    return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos: 
+const makePrompt = (description) => {
+    return `Proporcióname detalles descriptivos para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos:
 
-Participantes del proceso.
-Inicio del proceso (Start Event).
-Tareas de usuario (User Tasks).
-Tareas de servicio (Service Tasks).
-Puertas de enlace Exclusivas (Exclusive Gateways).
-Fin del proceso (End Event).
+    Participantes del proceso (participants).
+    Inicio del proceso (Start Event).
+    Tareas de usuario (User Tasks).
+    Tareas de servicio (Service Tasks).
+    Puertas de enlace Exclusivas (Exclusive Gateways).
+    Fin del proceso (End Event).
 
-Asegúrate de incluir para cada una de las tareas el nombre de la tarea y el participante al que está asociado, además de indicar cómo estos elementos están conectados mediante flujos de secuencia (Sequence Flows), ten en cuenta el orden de los elementos en el diagrama y quiero que los componentes del JSON sigan el siguiente orden: Process -> participants -> elements -> flows y quiero que incluyas todos los gateways que consideres necesarios dentro de la misma lista de los elements.
-Quiero que tu respuesta siga este mismo formato conservando su estructura:
-        {
-            "participants": [
-                { "name": "Participante Implicado" }, ...
+    Asegúrate de incluir para cada uno de los elementos el nombre del elemento y el participante al que está asociado, además de indicar cómo estos elementos están conectados mediante flujos, ten en cuenta el orden de los elementos en el diagrama y quiero que incluyas todos los gateways que consideres necesarios dentro de la misma lista de los elements.
+    Quiero que tu respuesta siga este mismo formato conservando su estructura:
+    {
+        "participants": [
+            { "name": "Participante Implicado" }, ...
         ],
-            "elements": [
-                {
-                    "type": "Task",
-                    "name": "Nombre tarea",
-                    "participant": "Participante Implicado"
-                }
-            ]
+        "elements": [
+            {
+                "type": "Task",
+                "name": "Nombre tarea",
+                "participant": "Participante Implicado"
+            }
+        ]
         "flows": [
             {
                 "source": "Nombre tarea",
                 "target": "Nombre tarea"
             }
         ]
-    } `
+    }`
 }
 
+/*
+const makePromptGpt = (description) => {
+    return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos: 
 
-const makePromptGemini = (description) => {
-    return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos:
+    Participantes del proceso (participants).
+    Inicio del proceso (Start Event).
+    Tareas de usuario (User Tasks).
+    Tareas de servicio (Service Tasks).
+    Puertas de enlace Exclusivas (Exclusive Gateways).
+    Fin del proceso (End Event).
 
-    1. Participantes del proceso(participants).
-    2. Inicio del proceso(Start Event).
-    3. Tareas de usuario(User Tasks).
-    4. Tareas de servicio(Service Tasks).
-    5. Puertas de enlace Exclusivas(Exclusive Gateways).
-    6. Fin del proceso(End Event).
-
-    Asegúrate de incluir para cada una de las tareas el nombre de la tarea y el participante al que está asociado(participant), además de indicar cómo estos elementos están conectados mediante flujos de secuencia(Sequence Flows) especificando el inicio(source) y el final(target) del flujo, ten en cuenta el orden de los elementos en el diagrama y quiero que los componentes del JSON sigan el siguiente orden: participants -> elements -> flows y quiero que incluyas todos los gateways que consideres necesarios dentro de la misma lista de los elements.
-
+    Asegúrate de incluir para cada una de las tareas el nombre de la tarea y el participante al que está asociado, además de indicar cómo estos elementos están conectados mediante flujos de secuencia (Sequence Flows), ten en cuenta el orden de los elementos en el diagrama y quiero que los componentes del JSON sigan el siguiente orden: participants -> elements -> flows y quiero que incluyas todos los gateways que consideres necesarios dentro de la misma lista de los elements.
     Quiero que tu respuesta siga este mismo formato conservando su estructura:
-        {
-            "participants": [
-                { "name": "Participante Implicado" }, ...
+    {
+        "participants": [
+            { "name": "Participante Implicado" }, ...
         ],
-            "elements": [
-                {
-                    "type": "Task",
-                    "name": "Nombre tarea",
-                    "participant": "Participante Implicado"
-                }
-            ]
+        "elements": [
+            {
+                "type": "Task",
+                "name": "Nombre tarea",
+                "participant": "Participante Implicado"
+            }
+        ]
         "flows": [
             {
                 "source": "Nombre tarea",
@@ -71,14 +70,50 @@ const makePromptGemini = (description) => {
 }
 
 
+const makePromptGemini = (description) => {
+    return `Proporcióname detalles descriptivos en formato JSON para el siguiente proceso: ${description}, ten en cuenta que el proceso se debe representar en formato BPMN 2.0 y debe incluir al menos los siguientes elementos:
+
+    1. Participantes del proceso (participants).
+    2. Inicio del proceso (Start Event).
+    3. Tareas de usuario (User Tasks).
+    4. Tareas de servicio (Service Tasks).
+    5. Puertas de enlace Exclusivas (Exclusive Gateways).
+    6. Fin del proceso (End Event).
+
+    Asegúrate de incluir para cada una de las tareas el nombre de la tarea y el participante al que está asociado(participant), además de indicar cómo estos elementos están conectados mediante flujos de secuencia(Sequence Flows) especificando el inicio(source) y el final(target) del flujo, ten en cuenta el orden de los elementos en el diagrama y quiero que los componentes del JSON sigan el siguiente orden: participants -> elements -> flows y quiero que incluyas todos los gateways que consideres necesarios dentro de la misma lista de los elements.
+
+    Quiero que tu respuesta siga este mismo formato conservando su estructura:
+    {
+        "participants": [
+            { "name": "Participante Implicado" }, ...
+        ],
+        "elements": [
+            {
+                "type": "Task",
+                "name": "Nombre tarea",
+                "participant": "Participante Implicado"
+            }
+        ]
+        "flows": [
+            {
+                "source": "Nombre tarea",
+                "target": "Nombre tarea"
+            }
+        ]
+    }`
+}
+*/
+
+
 const fetcher = async (model, body) => {
     return await fetch(`${API_URL}/assistant/${model}/`, {
         method: "POST",
         body: body
     })
         .then(response => response.json())
-        .then(({ data }) => { console.log(model); console.log(data); return { message: data.message, modelResponse: "```json\n" + data.xml + "```", json: JSON.parse(data.xml) } })
-        .then(({ message, modelResponse, json }) => { return { message: message, json: modelResponse, xml: buildBPMN(json) } });
+        .then(({ data }) => ({ message: data.message, usage: data.usage, modelResponse: "```json\n" + data.xml + "```", json: JSON.parse(data.xml) }))
+        .then(({ message, usage, modelResponse, json }) => ({ prompt: message, response: modelResponse, responseData: { ...buildBPMN(json), usage: usage } }))
+        .catch(error => ({ error: error }));
 }
 
 
@@ -86,7 +121,7 @@ export const gpt = async (description) => {
     const body = JSON.stringify({
         messages: [
             { role: 'system', content: 'You are a helpful assistant.' },
-            { role: 'user', content: makePromptGpt(description) }
+            { role: 'user', content: makePrompt(description) }
         ]
     })
     return await fetcher("gpt", body)
@@ -105,7 +140,7 @@ export const gptTunned = async (description) => {
 export const gemini = async (description) => {
     const body = JSON.stringify({
         messages: [
-            { role: 'user', parts: makePromptGemini(description) }
+            { role: 'user', parts: makePrompt(description) }
         ]
     })
     return await fetcher("gemini", body)
