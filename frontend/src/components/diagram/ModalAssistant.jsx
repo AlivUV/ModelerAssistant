@@ -333,6 +333,7 @@ function ModalAssistant(props) {
                 <textarea className="form-control" required value={description} rows="5" onChange={handleChangeDescription} name='description' style={{ overflow: 'auto', resize: 'vertical' }}></textarea>
               </div>
               <hr className="hr hr-blurry" />  {/*Divider*/}
+              {/** 
               {
                 (record.length > 1)
                   ? <></>
@@ -365,7 +366,7 @@ function ModalAssistant(props) {
                               <div className="mb-3">
                                 <label className="form-label">Responsible: </label>
                                 <input className="form-control" onChange={(e) => handleChangeResponsibles(e, index)} name='responsible' />
-                                <hr className="hr hr-blurry" />  {/*Divider*/}
+                                <hr className="hr hr-blurry" />  
                               </div>
                             </div>
                           </div>
@@ -373,7 +374,7 @@ function ModalAssistant(props) {
                       ))
                     }
                   </div>
-              }
+              }*/}
               <div className="modal-footer border-0">
                 <button type="button" className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
                 {
