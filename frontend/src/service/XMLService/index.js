@@ -98,34 +98,36 @@ const buildBPMN = jsonBPMN => {
     return {
         // Código XML del diagrama
         xml: bpmn.xml,
-        // Número Total de Eventos de Inicio del Modelo.
-        NTSE: bpmn.startEvts,
-        // Número Total de Eventos Intermedios del Modelo.
-        NTIE: bpmn.interEvts,
-        // Número Total de Eventos Finales del Modelo.
-        TNEE: bpmn.endEvts,
-        // Número Total de Tareas del Modelo.
-        TNT: bpmn.tasks,
-        // Número Total de Sub-Procesos Colapsados del Modelo.
-        TNCS: bpmn.TNCS,
-        // Número Total de Eventos del Modelo.
-        TNE: (bpmn.startEvts + bpmn.interEvts + bpmn.endEvts),
-        // Número Total de Decisiones/Uniones del Modelo.
-        TNG: bpmn.gateways,
-        // Número Total de Objetos de Datos en el Modelo.
-        TNDO: bpmn.TNDO,
-        // Nivel de Conectividad entre Actividades.
-        CLA: (bpmn.tasks / bpmn.seqFlows),
-        // Nivel de Conectividad entre Participantes.
-        CLP: (bpmn.msgFlows / bpmn.participants.length),
-        // Proporción de Objetos de Datos como Producto entrante y el total de Objetos de Datos.
-        PDOPIn: bpmn.PDOPIn,
-        // Proporción de Objetos de Datos como Producto de salida y el total de Objetos de Datos.
-        PDOPOut: bpmn.PDOPOut,
-        // Proporción de Objetos de Datos como Producto de salida de Actividades del Modelo.
-        PDOTOut: bpmn.PDOTOut,
-        // Proporción Participantes y/o Carriles y las Actividades del Modelo.
-        PLT: (bpmn.participants.length / bpmn.tasks)
+        metrics: {
+            // Número Total de Eventos de Inicio del Modelo.
+            NTSE: bpmn.startEvts,
+            // Número Total de Eventos Intermedios del Modelo.
+            NTIE: bpmn.interEvts,
+            // Número Total de Eventos Finales del Modelo.
+            TNEE: bpmn.endEvts,
+            // Número Total de Tareas del Modelo.
+            TNT: bpmn.tasks,
+            // Número Total de Sub-Procesos Colapsados del Modelo.
+            TNCS: bpmn.TNCS,
+            // Número Total de Eventos del Modelo.
+            TNE: (bpmn.startEvts + bpmn.interEvts + bpmn.endEvts),
+            // Número Total de Decisiones/Uniones del Modelo.
+            TNG: bpmn.gateways,
+            // Número Total de Objetos de Datos en el Modelo.
+            TNDO: bpmn.TNDO,
+            // Nivel de Conectividad entre Actividades.
+            CLA: (bpmn.tasks / bpmn.seqFlows),
+            // Nivel de Conectividad entre Participantes.
+            CLP: (bpmn.msgFlows / bpmn.participants.length),
+            // Proporción de Objetos de Datos como Producto entrante y el total de Objetos de Datos.
+            PDOPIn: bpmn.PDOPIn,
+            // Proporción de Objetos de Datos como Producto de salida y el total de Objetos de Datos.
+            PDOPOut: bpmn.PDOPOut,
+            // Proporción de Objetos de Datos como Producto de salida de Actividades del Modelo.
+            PDOTOut: bpmn.PDOTOut,
+            // Proporción Participantes y/o Carriles y las Actividades del Modelo.
+            PLT: (bpmn.participants.length / bpmn.tasks)
+        }
     };
 }
 

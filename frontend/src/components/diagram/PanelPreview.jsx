@@ -74,6 +74,6 @@ export default function PanelPreview(props) {
     }, [diagram, props, run, modeler])
 
     // Return the preview div with the specified height and width
-    return (<div id={"preview" + props.id} style={{ height: window.innerHeight * 0.7, width: window.innerWidth }} />);
+    return (<div id={"preview" + props.id} style={{ height: window.innerHeight * 0.66, width: window.innerWidth }} />);
 
 }

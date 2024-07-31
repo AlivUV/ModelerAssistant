@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react';
 
 // Components
 import PanelPreview from './PanelPreview';
-
+import Metrics from './Metrics';
 
 
 function ModalPreview(props) {
@@ -15,6 +15,23 @@ function ModalPreview(props) {
   const [isRecording, setIsRecording] = useState(false);
   // Initializing state variable to store active tab
   const [activeTab, setActiveTab] = useState('gpt'); // Estado para gestionar la pestaña activa
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    if (!props.diagrams[activeTab].metrics) {
+      setTableData([])
+      return
+    }
+
+
+    let data = [];
+
+    for (const [key, value] of Object.entries(props.diagrams[activeTab].metrics)) {
+      data.push({ attribute: key, value: value })
+    };
+    setTableData(data);
+  }, [activeTab, props.diagrams[activeTab].metrics]);
+
 
   /**
    * Function to handle tab change.
@@ -117,7 +134,7 @@ function ModalPreview(props) {
       aria-hidden="true"
       ref={props.refModalPreview}
     >
-      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" style={{ flex: 1, overflowX: 'auto' }}>
         <div className="modal-content bg-two border-0">
           <div className="modal-header bg-one">
             <h5 className="modal-title text-white" id="tittlePropertiesPanel">Diagram Preview</h5>
@@ -146,7 +163,7 @@ function ModalPreview(props) {
                 className={`nav-link ${activeTab === 'gptTunned' ? 'active' : ''}`}
                 onClick={() => handleTabChange('gptTunned')}
               >
-                <span style={{ marginRight: '5px' }}>GPT-3.5-Tunned</span>
+                <span style={{ marginRight: '5px' }}>GPT-3.5 Fine-Tuning</span>
                 {props.loader.gptTunned &&
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -171,28 +188,32 @@ function ModalPreview(props) {
           </ul>
 
           {/* Tab Content */}
-          <div className="tab-content">
+          <div className="tab-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', backgroundColor: 'white' }}>
             <div
-              className={`tab-pane fade ${activeTab === 'gpt' ? 'show active' : ''}`}
+              className={`tab-pane fade ${activeTab === 'gpt' ? 'show active' : ''}`} style={{ flex: 3, overflowX: 'hidden' }}
             >
               {/* Content for Tab 1 */}
               <PanelPreview id={'gpt'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
+
             </div>
             <div
-              className={`tab-pane fade ${activeTab === 'gptTunned' ? 'show active' : ''}`}
-            >
-              {/* Content for Tab 3 */}
-              {/* Add content for Tab 3 */}
-              <PanelPreview id={'gptTunned'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
-            </div>
-            <div
-              className={`tab-pane fade ${activeTab === 'gemini' ? 'show active' : ''}`}
+              className={`tab-pane fade ${activeTab === 'gptTunned' ? 'show active' : ''}`} style={{ flex: 3, overflowX: 'hidden' }}
             >
               {/* Content for Tab 2 */}
               {/* Add content for Tab 2 */}
+              <PanelPreview id={'gptTunned'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
+            </div>
+            <div
+              className={`tab-pane fade ${activeTab === 'gemini' ? 'show active' : ''}`} style={{ flex: 3, overflowX: 'hidden' }}
+            >
+              {/* Content for Tab 3 */}
+              {/* Add content for Tab 3 */}
               <PanelPreview id={'gemini'} opened={props.opened} setOpened={props.setOpened} diagrams={props.diagrams} diagramsDispatch={props.diagramsDispatch} />
             </div>
             {/* Add more tab content as needed */}
+            <div style={{ flex: 0.8, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Metrics data={tableData} />
+            </div>
           </div>
           <div className="modal-footer border-0">
             <button type="button" onClick={handleClose} className="btn-two shadow-lg py-1" data-bs-dismiss="modal">Close</button>
