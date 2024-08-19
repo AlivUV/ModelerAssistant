@@ -1,6 +1,4 @@
-## Smart Copilot (EBPM)
-
-This project is available online at: http://143.110.227.203/
+## Enriched Smart Copilot (EBPM)
 
 ### Local configuration
 ### Frontend
@@ -36,6 +34,8 @@ DATABASE_USER="postgres"
 DATABASE_PASSWORD="postgres"
 DATABASE_HOST="localhost"
 DATABASE_PORT="5432"
+OPENAI_API_KEY="Secret_OpenAI_Api_Key"
+GEMINI_API_KEY="Secret_Gemini_Api_Key"
 ```
 
 2. Install dependencies
