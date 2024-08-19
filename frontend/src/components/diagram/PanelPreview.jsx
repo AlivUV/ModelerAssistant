@@ -37,8 +37,9 @@ export default function PanelPreview(props) {
         props.setOpened(true);
 
         modeler.saveXML({ format: true }).then(data => {
-            props.diagramsDispatcher({
-                type: `UPDATE_XML_${props.id}`,
+            props.diagramsDispatch({
+                type: `UPDATE_MODEL_XML`,
+                model: props.id,
                 payload: {
                     xml: data.xml
                 }
@@ -64,6 +65,7 @@ export default function PanelPreview(props) {
     // useEffect hook to run the diagram when the diagram or props change
     useEffect(() => {
         if (diagram.xml === "") {
+            console.log(props.diagrams)
             setDiagram(props.diagrams[props.id]);
             return
         }
@@ -72,6 +74,6 @@ export default function PanelPreview(props) {
     }, [diagram, props, run, modeler])
 
     // Return the preview div with the specified height and width
-    return (<div id={"preview" + props.id} style={{ height: window.innerHeight * 0.7, width: window.innerWidth }} />);
+    return (<div id={"preview" + props.id} style={{ height: window.innerHeight * 0.66, width: window.innerWidth }} />);
 
 }
