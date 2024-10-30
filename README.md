@@ -49,3 +49,5 @@ GEMINI_API_KEY="Secret_Gemini_Api_Key"
 4. Start project
 
 - Execute the project with `python manage.py runserver`.
+
+https://drive.google.com/file/d/1XiEmTjFgxBRdabWr8cBDbecLCS_ThY1S/view?usp=drive_link
